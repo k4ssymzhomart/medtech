@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { SearchInput } from "@/components/ui/SearchInput";
+import type { CoverageStats } from "@/lib/queries/stats";
 
 const POPULAR = [
   "ОАК",
@@ -10,14 +11,22 @@ const POPULAR = [
   "МРТ",
 ];
 
-export function Hero() {
+const ru = (n: number) => n.toLocaleString("ru-RU");
+
+export function Hero({ stats }: { stats: CoverageStats }) {
+  const trust = [
+    [ru(stats.offers), "цен"],
+    [ru(stats.clinics), "клиник"],
+    [ru(stats.cities), "городов"],
+    [ru(stats.services), "услуг"],
+  ];
   return (
     <section className="border-b border-border">
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-28">
-        <h1 className="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
+      <div className="mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
+        <h1 className="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-[3.25rem]">
           Цены на медицинские услуги по всему Казахстану в одном месте
         </h1>
-        <p className="mx-auto mt-5 max-w-xl text-balance text-base text-muted sm:text-lg">
+        <p className="mx-auto mt-6 max-w-xl text-balance text-base text-muted sm:text-lg">
           Сравните анализы, приёмы врачей, УЗИ и диагностику в клиниках. Прозрачно
           и бесплатно.
         </p>
@@ -56,6 +65,17 @@ export function Hero() {
             </Link>
           ))}
         </div>
+
+        {stats.offers > 0 && (
+          <div className="mx-auto mt-12 flex max-w-lg flex-wrap items-center justify-center gap-x-8 gap-y-3">
+            {trust.map(([n, label]) => (
+              <div key={label} className="text-center">
+                <div className="numeric text-2xl font-bold tracking-tight">{n}</div>
+                <div className="text-xs uppercase tracking-wide text-muted-2">{label}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -20,6 +20,8 @@ export type ClinicDetail = {
     phone: string | null;
     website_url: string | null;
     rating: number | null;
+    lat: number | null;
+    lng: number | null;
   };
   offers: ClinicOffer[];
 };
@@ -33,7 +35,7 @@ export async function getClinic(id: string): Promise<ClinicDetail | null> {
     const sb = createServerClient();
     const { data: clinic } = await sb
       .from("clinics")
-      .select("id, name, city, address, phone, website_url, rating")
+      .select("id, name, city, address, phone, website_url, rating, lat, lng")
       .eq("id", id)
       .single();
     if (!clinic) return null;

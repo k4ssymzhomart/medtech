@@ -10,7 +10,7 @@ export default async function LandingPage() {
   const stats = await getCoverageStats();
   return (
     <>
-      <Hero />
+      <Hero stats={stats} />
       <HowItWorks />
       <WhyUs stats={stats} />
       <FooterCTA />
