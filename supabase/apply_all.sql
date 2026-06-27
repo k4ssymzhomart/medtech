@@ -1,5 +1,5 @@
 -- MedServicePrice.kz — combined apply (extensions + schema + rls + seed).
--- Paste into the Supabase SQL Editor and run, or apply via the Management API.
+-- Paste into the Supabase SQL Editor and run, top to bottom.
 
 -- ============================================================
 -- FILE: supabase/migrations/20260627093235_extensions.sql
