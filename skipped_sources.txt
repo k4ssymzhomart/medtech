@@ -63,3 +63,56 @@ no_price | North Kazakhstan Regional Hospital Petropavlovsk | https://ob.sko.kz/
 no_price | Taldykorgan City Polyclinic | https://taldpol.kz/ru/platnye-uslugi
 no_price | Central Hospital Temirtau | https://cb-temirtau.kz/nashi-uslugi/prejskurant-tsen-na-platnye-meditsinskie-uslugi
 no_price | West Kazakhstan Regional Hospital Uralsk | http://omb-zko.kz/ru/perechen-platnyh-uslug/
+
+# all @ 2026-06-27T21:19:32.360113+00:00
+no_price | MDC VESNET | http://www.vesnet-medical.com/price.shtml
+no_price | Doq-med | https://doq-med.kz/almaty/uslugi/
+no_price | Daru Clinic rehab MC | http://daru-clinic.kz/files/price.pdf
+no_price | Algamed — Все Цены | https://algamed.kz/prices
+no_price | MC Diacent | https://diacent.kz/price
+no_price | Polyclinic No7 Semey CDC | https://diagnose.kz/ru/paczientu/prejskurant-czen/
+no_price | APOSTOL DENTAL | https://apostoldent.kz/price
+no_price | Credo Med Clinic | https://cmclinic.kz/pricelist/
+no_price | Amira Clinic | https://amiraclinic.kz/price/159-plasticheskaya-khirurgiya
+no_price | Hippokrat diagnostic center | https://hippokrat.kz/
+no_price | City Clinical Hospital No5 GKB5 | https://www.gkb5.kz/preyskurant-tsen/
+no_price | NNMC National Scientific Medical Center | https://www.nnmc.kz/storage/app/uploads/public/6a0/45c/48b/6a045c48b152b286520515.pdf
+no_price | Akmola Regional Hospital Kokshetau | https://amob.kz/ru/prejskurant-tsen
+no_price | Central City Clinical Hospital CGKB | https://almaty-cgkb.kz/ru/medser/price
+no_price | Green Clinic | https://greenclinic.kz/ru/prices/stomatologiya
+no_price | Regional Diagnostic Center RDC Almaty | https://rdc.kz/price/
+no_price | CDC Deya Petropavlovsk | https://dea.kz/цены/price.html
+no_price | City Clinical Hospital No4 | https://gkb4-almaty.kz/prejskurant-tsen-na-platnye-uslugi/
+no_price | MC Medicus Kokshetau | https://medicus-clinic.kz/uslugi/
+no_price | Nova Medical Centre Kyzylorda | https://nova-med.kz/kyzylorda
+no_price | Demokrat dental clinic | https://demokratastana.kz/prices
+no_price | MC Mitraliya Petropavlovsk | https://mitraliya.kz/pricing
+no_price | North Kazakhstan Regional Hospital Petropavlovsk | https://ob.sko.kz/page/read/Prejskurant_cen_na_medicinskie_uslugi.html?lang=ru
+no_price | Taldykorgan City Polyclinic | https://taldpol.kz/ru/platnye-uslugi
+no_price | Central Hospital Temirtau | https://cb-temirtau.kz/nashi-uslugi/prejskurant-tsen-na-platnye-meditsinskie-uslugi
+no_price | West Kazakhstan Regional Hospital Uralsk | http://omb-zko.kz/ru/perechen-platnyh-uslug/
+
+# all @ 2026-06-27T21:32:16.612743+00:00
+no_price | MDC VESNET | http://www.vesnet-medical.com/price.shtml
+no_price | Doq-med | https://doq-med.kz/almaty/uslugi/
+no_price | Algamed — Все Цены | https://algamed.kz/prices
+no_price | MC Diacent | https://diacent.kz/price
+no_price | Polyclinic No7 Semey CDC | https://diagnose.kz/ru/paczientu/prejskurant-czen/
+no_price | APOSTOL DENTAL | https://apostoldent.kz/price
+no_price | Credo Med Clinic | https://cmclinic.kz/pricelist/
+no_price | Amira Clinic | https://amiraclinic.kz/price/159-plasticheskaya-khirurgiya
+no_price | City Clinical Hospital No5 GKB5 | https://www.gkb5.kz/preyskurant-tsen/
+no_price | Akmola Regional Hospital Kokshetau | https://amob.kz/ru/prejskurant-tsen
+no_price | Central City Clinical Hospital CGKB | https://almaty-cgkb.kz/ru/medser/price
+no_price | Green Clinic | https://greenclinic.kz/ru/prices/stomatologiya
+no_price | Regional Diagnostic Center RDC Almaty | https://rdc.kz/price/
+no_price | CDC Deya Petropavlovsk | https://dea.kz/цены/price.html
+no_price | City Clinical Hospital No4 | https://gkb4-almaty.kz/prejskurant-tsen-na-platnye-uslugi/
+no_price | MC Medicus Kokshetau | https://medicus-clinic.kz/uslugi/
+no_price | Nova Medical Centre Kyzylorda | https://nova-med.kz/kyzylorda
+no_price | Demokrat dental clinic | https://demokratastana.kz/prices
+no_price | MC Mitraliya Petropavlovsk | https://mitraliya.kz/pricing
+no_price | North Kazakhstan Regional Hospital Petropavlovsk | https://ob.sko.kz/page/read/Prejskurant_cen_na_medicinskie_uslugi.html?lang=ru
+no_price | Taldykorgan City Polyclinic | https://taldpol.kz/ru/platnye-uslugi
+no_price | Central Hospital Temirtau | https://cb-temirtau.kz/nashi-uslugi/prejskurant-tsen-na-platnye-meditsinskie-uslugi
+no_price | West Kazakhstan Regional Hospital Uralsk | http://omb-zko.kz/ru/perechen-platnyh-uslug/
