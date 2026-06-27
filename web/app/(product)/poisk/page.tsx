@@ -1,66 +1,122 @@
-import { ListFilter, SearchX } from "lucide-react";
+import { SearchX, ListFilter, Search } from "lucide-react";
+import Link from "next/link";
 import { SearchBar } from "@/components/product/SearchBar";
-import { Select } from "@/components/ui/Select";
+import { ResultsFilters } from "@/components/product/ResultsFilters";
+import { ResultsList } from "@/components/product/ResultsList";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
+import { getOffersForQuery, getCategories, type SortKey } from "@/lib/queries/offers";
+import { getFlag } from "@/lib/queries/flags";
+import { formatPrice } from "@/lib/utils/format";
 
 export const metadata = { title: "Поиск услуг — MedServicePrice.kz" };
+export const dynamic = "force-dynamic";
 
-export default async function PoiskPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const { q = "" } = await searchParams;
+type SP = {
+  q?: string;
+  city?: string;
+  category?: string;
+  min?: string;
+  max?: string;
+  sort?: string;
+};
+
+export default async function PoiskPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim();
+
+  const [{ service, alternatives, offers, cities, minPrice }, categories, distanceEnabled] =
+    await Promise.all([
+      q
+        ? getOffersForQuery(q, {
+            city: sp.city,
+            category: sp.category,
+            minPrice: sp.min ? Number(sp.min) : undefined,
+            maxPrice: sp.max ? Number(sp.max) : undefined,
+            sort: (sp.sort as SortKey) ?? "price_asc",
+          })
+        : Promise.resolve({ service: null, alternatives: [], offers: [], cities: [], minPrice: null }),
+      getCategories(),
+      getFlag("distance_sort"),
+    ]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-2xl font-bold tracking-tight">Поиск услуг</h1>
       <p className="mt-1 text-sm text-muted">
-        Введите название анализа, приёма или исследования.
+        Введите название анализа, приёма или исследования и сравните цены клиник.
       </p>
 
       <div className="mt-5 max-w-2xl">
         <SearchBar initialQuery={q} />
       </div>
 
-      {q && (
-        <p className="mt-4 text-sm text-muted">
-          Результаты по запросу <span className="text-foreground">«{q}»</span>
-        </p>
-      )}
-
-      <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
-        {/* Filters rail — visual placeholder (filters land in the next step). */}
-        <aside className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <ListFilter size={16} className="text-muted" />
-            Фильтры
-          </div>
-          <div className="space-y-3 opacity-60">
-            <label className="block text-xs text-muted">Город</label>
-            <Select disabled>
-              <option>Все города</option>
-            </Select>
-            <label className="block text-xs text-muted">Категория</label>
-            <Select disabled>
-              <option>Все категории</option>
-            </Select>
-            <label className="block text-xs text-muted">Сортировка</label>
-            <Select disabled>
-              <option>Сначала дешёвые</option>
-            </Select>
-          </div>
-          <p className="text-xs text-muted-2">Фильтры подключаются позже.</p>
-        </aside>
-
-        <section>
+      {!q ? (
+        <div className="mt-8">
           <EmptyState
-            icon={q ? SearchX : ListFilter}
-            title="Предложения клиник появятся после подключения источников"
-            description="Каталог услуг уже наполнен. Цены клиник подтянет парсер на следующем шаге, и здесь появится список, отсортированный по цене, с датой обновления."
+            icon={Search}
+            title="Начните с поиска услуги"
+            description="Например: ОАК, глюкоза, ТТГ, витамин D, биохимия. Покажем все клиники с ценами, от самой дешёвой."
           />
-        </section>
-      </div>
+        </div>
+      ) : !service ? (
+        <div className="mt-8">
+          <EmptyState
+            icon={SearchX}
+            title={`Ничего не найдено по запросу «${q}»`}
+            description="Попробуйте другое название или сокращение."
+          />
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 flex flex-wrap items-baseline gap-3">
+            <h2 className="text-lg font-semibold">{service.canonical_name}</h2>
+            {service.category && <Badge variant="outline">{service.category.name}</Badge>}
+            <span className="text-sm text-muted">
+              {offers.length
+                ? `${offers.length} ${offers.length === 1 ? "клиника" : "клиник"}${
+                    minPrice != null ? `, от ${formatPrice(minPrice)}` : ""
+                  }`
+                : "нет актуальных предложений"}
+            </span>
+          </div>
+
+          {alternatives.length > 0 && (
+            <p className="mt-2 text-sm text-muted">
+              Возможно вы искали:{" "}
+              {alternatives.map((a, i) => (
+                <span key={a.id}>
+                  {i > 0 && ", "}
+                  <Link href={`/poisk?q=${encodeURIComponent(a.canonical_name)}`} className="text-accent hover:underline">
+                    {a.canonical_name}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          )}
+
+          <div className="mt-6 grid gap-8 lg:grid-cols-[240px_1fr]">
+            <ResultsFilters cities={cities} categories={categories} distanceEnabled={distanceEnabled} />
+            <section>
+              {offers.length === 0 ? (
+                <EmptyState
+                  icon={ListFilter}
+                  title="Нет предложений под выбранные фильтры"
+                  description="Сбросьте фильтры или расширьте диапазон цены."
+                />
+              ) : (
+                <ResultsList
+                  offers={offers}
+                  minPrice={minPrice}
+                  serviceSlug={service.slug}
+                  distanceEnabled={distanceEnabled}
+                  sort={sp.sort ?? "price_asc"}
+                />
+              )}
+            </section>
+          </div>
+        </>
+      )}
     </div>
   );
 }

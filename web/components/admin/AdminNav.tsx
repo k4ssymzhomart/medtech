@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Database, Inbox, BookOpen, Archive } from "lucide-react";
+import { LayoutDashboard, Database, Inbox, BookOpen, Archive, ToggleRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const ITEMS = [
@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/istochniki", label: "Источники", icon: Database },
   { href: "/admin/ochered", label: "Очередь", icon: Inbox },
   { href: "/admin/katalog", label: "Каталог", icon: BookOpen },
+  { href: "/admin/funkcii", label: "Функции", icon: ToggleRight },
   { href: "/admin/arhiv", label: "Архив", icon: Archive },
 ];
 

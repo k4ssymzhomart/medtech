@@ -10,10 +10,25 @@ the queue instead of being mis-linked. High precision over recall by design.
 from __future__ import annotations
 
 import json
+import re
 
 import anthropic
 
 AUTO_LINK_THRESHOLD = 0.70
+_BATCH = 60  # names per LLM call (keeps output under max_tokens)
+
+
+def _loads_matches(payload: str) -> list[dict]:
+    try:
+        return json.loads(payload).get("matches", [])
+    except json.JSONDecodeError:
+        out = []
+        for chunk in re.findall(r"\{[^{}]*\}", payload):
+            try:
+                out.append(json.loads(chunk))
+            except json.JSONDecodeError:
+                pass
+        return out
 
 _SCHEMA = {
     "type": "object",
@@ -55,33 +70,34 @@ def llm_match_batch(
 
     slug_to_id = {c["slug"]: c["id"] for c in catalog}
     listing = "\n".join(f"{c['slug']} = {c['canonical_name']}" for c in catalog)
-    names = "\n".join(f"- {n}" for n in uniq)
-
     client = anthropic.Anthropic(api_key=api_key)
-    resp = client.messages.create(
-        model=model,
-        max_tokens=8000,
-        system=_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _SCHEMA}},
-        messages=[
-            {
-                "role": "user",
-                "content": f"КАТАЛОГ (slug = название):\n{listing}\n\n"
-                f"СЫРЫЕ НАЗВАНИЯ:\n{names}\n\n"
-                "Верни сопоставление для каждого сырого названия.",
-            }
-        ],
-    )
-    payload = next((b.text for b in resp.content if b.type == "text"), "{}")
-    data = json.loads(payload)
-
     out: dict[str, tuple[str | None, float]] = {n: (None, 0.0) for n in uniq}
-    for m in data.get("matches", []):
-        raw = str(m.get("raw", "")).strip()
-        slug = str(m.get("slug", "")).strip()
-        conf = float(m.get("confidence", 0.0))
-        if raw not in out:
-            continue
-        sid = slug_to_id.get(slug)
-        out[raw] = (sid, conf) if sid else (None, conf)
+
+    for i in range(0, len(uniq), _BATCH):
+        names = "\n".join(f"- {n}" for n in uniq[i : i + _BATCH])
+        resp = client.messages.create(
+            model=model,
+            max_tokens=8000,
+            system=_SYSTEM,
+            output_config={"format": {"type": "json_schema", "schema": _SCHEMA}},
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"КАТАЛОГ (slug = название):\n{listing}\n\n"
+                    f"СЫРЫЕ НАЗВАНИЯ:\n{names}\n\n"
+                    "Верни сопоставление для каждого сырого названия.",
+                }
+            ],
+        )
+        payload = next((b.text for b in resp.content if b.type == "text"), "{}")
+        for m in _loads_matches(payload):
+            raw = str(m.get("raw", "")).strip()
+            slug = str(m.get("slug", "")).strip()
+            try:
+                conf = float(m.get("confidence", 0.0))
+            except (TypeError, ValueError):
+                conf = 0.0
+            if raw in out:
+                sid = slug_to_id.get(slug)
+                out[raw] = (sid, conf) if sid else (None, conf)
     return out

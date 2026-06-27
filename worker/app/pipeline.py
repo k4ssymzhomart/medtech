@@ -1,18 +1,24 @@
-"""Pipeline orchestration: fetch -> parse -> extract -> normalize -> write.
+"""Pipeline orchestration: fetch -> extract -> normalize -> write. NO LLM, no API key.
 
-Called by main.process_job for each claimed parse_runs job. Writes raw_documents,
-raw_extractions, price_offers (+ price_history), unmatched_queue, parse_logs, and
-returns the parse_runs counters.
+Production load keeps every row (no cleanup). Extraction is deterministic HTML parsing
+(per-source DOM parsers + a generic fallback). Normalization is deterministic too:
+exact/synonym -> head-prefix -> guarded fuzzy. Confident matches become offers; plausible
+near-misses go to unmatched_queue for the admin to resolve (which grows the synonym table
+and lifts recall on every future run); clearly off-catalog names are dropped from the
+live layer but retained in raw_extractions for audit.
 """
 
 from __future__ import annotations
 
 from .config import settings
-from .extract import extract
-from .fetch import fetch
-from .normalize.llm import AUTO_LINK_THRESHOLD, llm_match_batch
-from .parse import html_to_text
-from .write import archive_missing, upsert_offer
+from .extract import extract_offers
+from .fetch import fetch_smart
+from .normalize.match import AUTO_LINK_SCORE, QUEUE_FLOOR, CatalogIndex
+from .write import upsert_offer
+
+
+class NoPriceFound(Exception):
+    """Raised when a page yields no extractable priced services (skip-log)."""
 
 
 def _log(sb, run_id, source_id, level, message, detail=None) -> None:
@@ -25,107 +31,87 @@ def run_source(sb, run_id: str, source: dict) -> dict:
     source_id = source["id"]
     clinic_id = source.get("default_clinic_id")
     if not clinic_id:
-        raise RuntimeError("source has no default_clinic_id; cannot attach offers")
+        raise RuntimeError("source has no default_clinic_id")
 
     counters = {"rows_found": 0, "rows_inserted": 0, "rows_updated": 0, "rows_unmatched": 0}
 
-    # 1. Fetch + record raw document (dedup level 1 via content_hash).
-    fetched = fetch(source["url"])
-    _log(sb, run_id, source_id, "info", f"fetched HTTP {fetched.status} {source['url']}")
+    fetched = fetch_smart(source["url"])
+    if fetched.status >= 400 or not fetched.body:
+        raise NoPriceFound(f"HTTP {fetched.status}")
     rawdoc = (
         sb.table("raw_documents")
-        .insert(
-            {
-                "source_id": source_id,
-                "run_id": run_id,
-                "content_hash": fetched.content_hash,
-                "http_status": fetched.status,
-                "mime_type": fetched.mime,
-            }
-        )
-        .execute()
-        .data[0]
+        .insert({"source_id": source_id, "run_id": run_id, "content_hash": fetched.content_hash,
+                 "http_status": fetched.status, "mime_type": fetched.mime})
+        .execute().data[0]
     )
 
-    # 2. Parse + 3. LLM extract.
-    text = html_to_text(fetched.body)
-    services = extract(text, model=settings.anthropic_model, api_key=settings.anthropic_api_key)
-    _log(sb, run_id, source_id, "info", f"LLM extracted {len(services)} services")
+    # Deterministic extraction (per-source DOM parser, else generic price-node fallback).
+    services = extract_offers(fetched.body, source["url"])
+    if not services:
+        raise NoPriceFound("no priced services extracted")
+    counters["rows_found"] = len(services)
+
+    # Audit: keep EVERY extracted row (the data is the deliverable). Capture ids so a
+    # queued near-miss can point back to its raw row (which carries the price).
+    raw_id_by_name: dict[str, str] = {}
+    rows = [{"raw_document_id": rawdoc["id"], "run_id": run_id, "source_id": source_id,
+             "raw_service_name": s.name, "raw_price": s.price, "raw_currency": s.currency,
+             "raw_duration": s.duration or None} for s in services]
+    for i in range(0, len(rows), 100):
+        inserted = sb.table("raw_extractions").insert(rows[i:i + 100]).execute().data
+        for r in inserted:
+            raw_id_by_name.setdefault(r["raw_service_name"], r["id"])
 
     catalog = (
-        sb.table("services_catalog")
-        .select("id, canonical_name, slug, synonyms")
-        .eq("is_active", True)
-        .execute()
-        .data
+        sb.table("services_catalog").select("id, canonical_name, slug, synonyms")
+        .eq("is_active", True).execute().data
     )
+    index = CatalogIndex(catalog)
 
-    # 4. Normalize — one batched semantic LLM call maps raw names -> catalog.
-    mapping = llm_match_batch(
-        [s.name for s in services],
-        catalog,
-        model=settings.anthropic_model,
-        api_key=settings.anthropic_api_key,
-    )
+    # Cross-run queue dedup: the same raw name recurs in every city (one template), so
+    # queue each unique name ONCE. Resolving it adds a synonym -> every city auto-links.
+    already_queued = {
+        r["raw_service_name"]
+        for r in sb.table("unmatched_queue").select("raw_service_name")
+        .eq("status", "pending").range(0, 49999).execute().data
+    }
 
-    # 5. Write.
-    seen_offer_ids: list[str] = []
+    dropped = 0
+    linked_this_run: set[str] = set()  # one offer per (service, clinic, source); first wins
+    queue_rows: list[dict] = []
     for s in services:
-        counters["rows_found"] += 1
-        ext = (
-            sb.table("raw_extractions")
-            .insert(
-                {
-                    "raw_document_id": rawdoc["id"],
-                    "run_id": run_id,
-                    "source_id": source_id,
-                    "raw_service_name": s.name,
-                    "raw_price": s.price,
-                    "raw_currency": s.currency,
-                    "raw_duration": s.duration or None,
-                }
-            )
-            .execute()
-            .data[0]
-        )
-
-        svc_id, conf = mapping.get(s.name.strip(), (None, 0.0))
-        if svc_id and conf >= AUTO_LINK_THRESHOLD:
-            action, offer_id = upsert_offer(
-                sb,
-                clinic_id=clinic_id,
-                service_id=svc_id,
-                source_id=source_id,
-                raw_name=s.name,
-                price=s.price,
-                currency=s.currency,
-                unit=s.unit,
-                duration=s.duration,
-                source_url=source["url"],
-                fx_usd_kzt=settings.fx_usd_kzt,
-                run_id=run_id,
-            )
-            if offer_id:
-                seen_offer_ids.append(offer_id)
+        service_id, conf, _how = index.match(s.name)
+        if service_id and conf >= AUTO_LINK_SCORE:
+            if service_id in linked_this_run:
+                continue  # a more standard variant already linked (e.g. skip "(динамика)")
+            linked_this_run.add(service_id)
+            action, _ = upsert_offer(
+                sb, clinic_id=clinic_id, service_id=service_id, source_id=source_id,
+                raw_name=s.name, price=s.price, currency=s.currency, unit=s.unit,
+                duration=s.duration, source_url=source["url"],
+                fx_usd_kzt=settings.fx_usd_kzt, run_id=run_id)
             if action == "inserted":
                 counters["rows_inserted"] += 1
             elif action == "updated":
                 counters["rows_updated"] += 1
-        else:
+        elif service_id and conf >= QUEUE_FLOOR:
+            if s.name in already_queued:
+                continue  # plausible near-miss already awaiting review (this or another city)
+            already_queued.add(s.name)
             counters["rows_unmatched"] += 1
-            sb.table("unmatched_queue").insert(
-                {
-                    "raw_extraction_id": ext["id"],
-                    "source_id": source_id,
-                    "raw_service_name": s.name,
-                    "suggested_service_id": svc_id,
-                    "confidence": conf,
-                    "status": "pending",
-                }
-            ).execute()
+            queue_rows.append(
+                {"raw_extraction_id": raw_id_by_name.get(s.name), "source_id": source_id,
+                 "raw_service_name": s.name, "suggested_service_id": service_id,
+                 "confidence": round(conf, 3), "status": "pending"})
+        else:
+            dropped += 1  # off-catalog: retained in raw_extractions, not in the live layer
 
-    archived = archive_missing(sb, source_id=source_id, seen_offer_ids=seen_offer_ids)
-    if archived:
-        _log(sb, run_id, source_id, "info", f"archived {archived} offers (not_in_latest_parse)")
+    for i in range(0, len(queue_rows), 100):
+        sb.table("unmatched_queue").insert(queue_rows[i:i + 100]).execute()
 
+    _log(sb, run_id, source_id, "info",
+         f"{len(services)} extracted -> {counters['rows_inserted']} new + "
+         f"{counters['rows_updated']} updated linked, {counters['rows_unmatched']} queued, "
+         f"{dropped} off-catalog")
+    # Production first-load: keep every row, no archiving (lifecycle is for re-runs).
     return counters

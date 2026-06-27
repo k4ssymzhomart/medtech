@@ -42,7 +42,7 @@ $$;
 -- CATALOG (reference)
 -- ===========================================================================
 
-create table service_categories (
+create table if not exists service_categories (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   slug        text not null unique,
@@ -54,7 +54,7 @@ create table service_categories (
 -- The «ОАК / CBC / Общий анализ крови» -> one canonical service mapping.
 -- `embedding` powers semantic matching (stage two of normalization).
 -- Dimension 1536 matches common text-embedding models; tune in the embedding pass.
-create table services_catalog (
+create table if not exists services_catalog (
   id             uuid primary key default gen_random_uuid(),
   canonical_name text not null,
   category_id    uuid references service_categories(id) on delete set null,
@@ -66,17 +66,17 @@ create table services_catalog (
   updated_at     timestamptz not null default now()
 );
 
-create index services_catalog_name_trgm
+create index if not exists services_catalog_name_trgm
   on services_catalog using gin (canonical_name gin_trgm_ops);
-create index services_catalog_synonyms_gin
+create index if not exists services_catalog_synonyms_gin
   on services_catalog using gin (synonyms);
-create index services_catalog_category
+create index if not exists services_catalog_category
   on services_catalog (category_id);
 -- Semantic search index (harmless on empty table; populated in the embedding pass).
-create index services_catalog_embedding_hnsw
+create index if not exists services_catalog_embedding_hnsw
   on services_catalog using hnsw (embedding vector_cosine_ops);
 
-create trigger services_catalog_set_updated_at
+create or replace trigger services_catalog_set_updated_at
   before update on services_catalog
   for each row execute function set_updated_at();
 
@@ -84,7 +84,7 @@ create trigger services_catalog_set_updated_at
 -- REAL-WORLD ENTITIES
 -- ===========================================================================
 
-create table clinics (
+create table if not exists clinics (
   id                 uuid primary key default gen_random_uuid(),
   name               text not null,
   city               text not null,           -- first-class field: all cities
@@ -105,12 +105,12 @@ create table clinics (
   updated_at         timestamptz not null default now()
 );
 
-create index clinics_geo_gist on clinics using gist (geo);
-create index clinics_city on clinics (city);
-create index clinics_name_trgm on clinics using gin (name gin_trgm_ops);
-create index clinics_active on clinics (is_active);
+create index if not exists clinics_geo_gist on clinics using gist (geo);
+create index if not exists clinics_city on clinics (city);
+create index if not exists clinics_name_trgm on clinics using gin (name gin_trgm_ops);
+create index if not exists clinics_active on clinics (is_active);
 
-create trigger clinics_set_updated_at
+create or replace trigger clinics_set_updated_at
   before update on clinics
   for each row execute function set_updated_at();
 
@@ -120,7 +120,7 @@ create trigger clinics_set_updated_at
 
 -- This row IS the admin-panel source entity: add a URL + frequency and you
 -- have added a source.
-create table sources (
+create table if not exists sources (
   id                   uuid primary key default gen_random_uuid(),
   name                 text not null,
   default_clinic_id    uuid references clinics(id) on delete set null,
@@ -141,15 +141,15 @@ create table sources (
   updated_at           timestamptz not null default now()
 );
 
-create index sources_active_next_run on sources (is_active, next_run_at);
+create index if not exists sources_active_next_run on sources (is_active, next_run_at);
 
-create trigger sources_set_updated_at
+create or replace trigger sources_set_updated_at
   before update on sources
   for each row execute function set_updated_at();
 
 -- Also the JOB QUEUE: inserting status='queued' is "Run now". The worker polls
 -- this table, claims queued rows, and writes counters/status back.
-create table parse_runs (
+create table if not exists parse_runs (
   id             uuid primary key default gen_random_uuid(),
   source_id      uuid not null references sources(id) on delete cascade,
   status         text not null default 'queued'
@@ -167,11 +167,11 @@ create table parse_runs (
 );
 
 -- Queue polling: claim oldest queued first.
-create index parse_runs_queue on parse_runs (status, created_at);
-create index parse_runs_source on parse_runs (source_id);
+create index if not exists parse_runs_queue on parse_runs (status, created_at);
+create index if not exists parse_runs_source on parse_runs (source_id);
 
 -- Satisfies "журналирование ошибок с указанием источника и причины".
-create table parse_logs (
+create table if not exists parse_logs (
   id         uuid primary key default gen_random_uuid(),
   run_id     uuid references parse_runs(id) on delete cascade,
   source_id  uuid references sources(id) on delete set null,
@@ -182,15 +182,15 @@ create table parse_logs (
   created_at timestamptz not null default now()
 );
 
-create index parse_logs_run on parse_logs (run_id);
-create index parse_logs_level on parse_logs (level);
+create index if not exists parse_logs_run on parse_logs (run_id);
+create index if not exists parse_logs_level on parse_logs (level);
 
 -- ===========================================================================
 -- RAW LAYER (kept separate, per TZ)
 -- ===========================================================================
 
 -- content_hash = dedup level 1 (skip re-processing an identical re-fetch).
-create table raw_documents (
+create table if not exists raw_documents (
   id           uuid primary key default gen_random_uuid(),
   source_id    uuid references sources(id) on delete cascade,
   run_id       uuid references parse_runs(id) on delete set null,
@@ -201,11 +201,11 @@ create table raw_documents (
   fetched_at   timestamptz not null default now()
 );
 
-create index raw_documents_hash on raw_documents (content_hash);
-create index raw_documents_source on raw_documents (source_id);
+create index if not exists raw_documents_hash on raw_documents (content_hash);
+create index if not exists raw_documents_source on raw_documents (source_id);
 
 -- Structured-but-not-yet-normalized rows from the LLM extraction stage.
-create table raw_extractions (
+create table if not exists raw_extractions (
   id              uuid primary key default gen_random_uuid(),
   raw_document_id uuid references raw_documents(id) on delete cascade,
   run_id          uuid references parse_runs(id) on delete set null,
@@ -218,7 +218,7 @@ create table raw_extractions (
   extracted_at    timestamptz not null default now()
 );
 
-create index raw_extractions_run on raw_extractions (run_id);
+create index if not exists raw_extractions_run on raw_extractions (run_id);
 
 -- AUDIT RETENTION RULE (enforced by the cleanup job, not a constraint):
 -- do NOT delete raw_documents / raw_extractions before 90 days.
@@ -227,7 +227,7 @@ create index raw_extractions_run on raw_extractions (run_id);
 -- NORMALIZED / LIVE
 -- ===========================================================================
 
-create table price_offers (
+create table if not exists price_offers (
   id              uuid primary key default gen_random_uuid(),
   clinic_id       uuid not null references clinics(id) on delete cascade,
   service_id      uuid references services_catalog(id) on delete set null,
@@ -258,19 +258,19 @@ create table price_offers (
   constraint price_offers_unique_offer unique (clinic_id, service_id, source_id)
 );
 
-create index price_offers_service on price_offers (service_id);
-create index price_offers_clinic on price_offers (clinic_id);
-create index price_offers_active on price_offers (is_active);
-create index price_offers_price on price_offers (price);
-create index price_offers_raw_name_trgm
+create index if not exists price_offers_service on price_offers (service_id);
+create index if not exists price_offers_clinic on price_offers (clinic_id);
+create index if not exists price_offers_active on price_offers (is_active);
+create index if not exists price_offers_price on price_offers (price);
+create index if not exists price_offers_raw_name_trgm
   on price_offers using gin (raw_service_name gin_trgm_ops);
 
-create trigger price_offers_set_updated_at
+create or replace trigger price_offers_set_updated_at
   before update on price_offers
   for each row execute function set_updated_at();
 
 -- The sparkline source. NEVER hard-deleted (offers are archived, not deleted).
-create table price_history (
+create table if not exists price_history (
   id             uuid primary key default gen_random_uuid(),
   price_offer_id uuid not null references price_offers(id) on delete cascade,
   price          numeric not null,
@@ -279,13 +279,13 @@ create table price_history (
   parse_run_id   uuid references parse_runs(id) on delete set null
 );
 
-create index price_history_offer on price_history (price_offer_id, recorded_at);
+create index if not exists price_history_offer on price_history (price_offer_id, recorded_at);
 
 -- ===========================================================================
 -- NORMALIZATION QUEUE — human-in-the-loop for below-threshold matches
 -- ===========================================================================
 
-create table unmatched_queue (
+create table if not exists unmatched_queue (
   id                  uuid primary key default gen_random_uuid(),
   raw_extraction_id   uuid references raw_extractions(id) on delete cascade,
   source_id           uuid references sources(id) on delete set null,
@@ -300,7 +300,7 @@ create table unmatched_queue (
   resolved_at         timestamptz
 );
 
-create index unmatched_queue_status on unmatched_queue (status, created_at);
+create index if not exists unmatched_queue_status on unmatched_queue (status, created_at);
 
 -- ============================================================
 -- FILE: supabase/migrations/20260627093237_rls.sql
@@ -327,35 +327,46 @@ alter table unmatched_queue    enable row level security;
 -- ---------------------------------------------------------------------------
 -- PUBLIC READ (anon + authenticated) — only non-archived rows
 -- ---------------------------------------------------------------------------
+drop policy if exists "public read categories" on service_categories;
 create policy "public read categories"
   on service_categories for select to anon, authenticated using (true);
 
+drop policy if exists "public read active services" on services_catalog;
 create policy "public read active services"
   on services_catalog for select to anon, authenticated using (is_active);
 
+drop policy if exists "public read active clinics" on clinics;
 create policy "public read active clinics"
   on clinics for select to anon, authenticated using (is_active);
 
+drop policy if exists "public read active offers" on price_offers;
 create policy "public read active offers"
   on price_offers for select to anon, authenticated using (is_active);
 
 -- Price history powers the public per-service sparkline (prices only, no PII).
+drop policy if exists "public read price history" on price_history;
 create policy "public read price history"
   on price_history for select to anon, authenticated using (true);
 
 -- ---------------------------------------------------------------------------
 -- ADMIN READ (authenticated) — operational surfaces
 -- ---------------------------------------------------------------------------
+drop policy if exists "admin read sources" on sources;
 create policy "admin read sources"
   on sources for select to authenticated using (true);
+drop policy if exists "admin read parse_runs" on parse_runs;
 create policy "admin read parse_runs"
   on parse_runs for select to authenticated using (true);
+drop policy if exists "admin read parse_logs" on parse_logs;
 create policy "admin read parse_logs"
   on parse_logs for select to authenticated using (true);
+drop policy if exists "admin read raw_documents" on raw_documents;
 create policy "admin read raw_documents"
   on raw_documents for select to authenticated using (true);
+drop policy if exists "admin read raw_extractions" on raw_extractions;
 create policy "admin read raw_extractions"
   on raw_extractions for select to authenticated using (true);
+drop policy if exists "admin read unmatched_queue" on unmatched_queue;
 create policy "admin read unmatched_queue"
   on unmatched_queue for select to authenticated using (true);
 
@@ -508,3 +519,49 @@ from (values
 ) as v(canonical_name, slug, synonyms)
 on conflict (slug) do nothing;
 
+
+-- ===========================================================================
+-- Phase 3 delta: geolocation (clinics.lat/lng) + feature flags
+-- ===========================================================================
+-- MedServicePrice.kz — Phase 3 delta — geolocation + feature flags
+-- Apply by pasting this whole file into the Supabase SQL Editor (non-443 ports are
+-- blocked, so psql / db push do not work from here). Safe to run more than once.
+
+-- ---------------------------------------------------------------------------
+-- GEOLOCATION: plain lat/lng on clinics.
+-- The schema already has a PostGIS `geo geography` column, but PostgREST can't
+-- round-trip it cleanly for client-side haversine, so we keep simple numeric
+-- lat/lng that the worker fills via a FREE geocoder (Nominatim / OpenStreetMap),
+-- falling back to city-centre coordinates when a clinic has no street address.
+-- ---------------------------------------------------------------------------
+alter table clinics add column if not exists lat double precision;
+alter table clinics add column if not exists lng double precision;
+
+-- ---------------------------------------------------------------------------
+-- FEATURE FLAGS: admin-toggleable switches so experimental features can be built
+-- but shipped OFF, then flipped ON from the admin panel when solid.
+-- ---------------------------------------------------------------------------
+create table if not exists feature_flags (
+  key         text primary key,
+  enabled     boolean not null default false,
+  label       text,
+  description text,
+  updated_at  timestamptz not null default now()
+);
+
+insert into feature_flags (key, enabled, label, description) values
+  ('distance_sort',       false, 'Сортировка по расстоянию',
+   'Геолокация пользователя и сортировка клиник по расстоянию (XX км)'),
+  ('price_subscriptions', false, 'Подписка на снижение цены',
+   'Уведомления, когда цена услуги падает'),
+  ('clinic_ratings',      false, 'Рейтинги и отзывы клиник',
+   'Показ рейтинга клиники (данных пока нет — включать при наличии бесплатного источника)')
+on conflict (key) do nothing;
+
+-- RLS: service_role (worker + admin server actions) bypasses RLS; allow anon read so
+-- public product pages can honour flags too.
+alter table feature_flags enable row level security;
+do $$ begin
+  create policy "public read feature flags"
+    on feature_flags for select to anon, authenticated using (true);
+exception when duplicate_object then null; end $$;

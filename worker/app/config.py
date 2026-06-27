@@ -7,7 +7,8 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 
-load_dotenv()  # reads worker/.env when run from the worker/ directory
+# Load worker/.env by path so the worker runs from any working directory.
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 
 @dataclass(frozen=True)
