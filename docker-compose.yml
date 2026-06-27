@@ -1,0 +1,10 @@
+# MedServicePrice.kz — local dev. The worker talks ONLY to Supabase (outbound),
+# so no inbound ports and no local Postgres are required: Supabase is the backbone.
+services:
+  worker:
+    build: ./worker
+    env_file:
+      - ./worker/.env
+    restart: unless-stopped
+    # The worker polls the parse_runs queue in Supabase; it has no inbound endpoint.
+    command: ["python", "-m", "app.main"]

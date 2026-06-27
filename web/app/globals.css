@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   MedServicePrice.kz — Design tokens (the Design Law, encoded once).
+   Light only · monochrome + ONE accent · hairline borders, no shadows ·
+   sharp corners (<= 2px) · Manrope + JetBrains Mono. Change the accent here only.
+   =========================================================================== */
+:root {
+  --background: #ffffff;
+  --surface: #fafafa;       /* subtle gray panel */
+  --foreground: #0a0a0a;    /* near-black text */
+  --muted: #666666;         /* secondary text */
+  --muted-2: #8f8f8f;       /* tertiary text */
+  --border: #eaeaea;        /* 1px hairline */
+  --border-strong: #e5e5e5;
+  --accent: #0070f3;        /* the single accent — Vercel blue */
+  --accent-hover: #0060d9;
+  --accent-foreground: #ffffff;
+  --success: #0a7d33;       /* freshness: fresh */
+  --warning: #946800;       /* freshness: stale */
+  --radius: 2px;            /* sharp corners, max 2px */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-jetbrains-mono);
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prices and numeric data render in monospace — the "data" feel (Design Law). */
+.numeric {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Selection in the single accent. */
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Focus-visible ring in the accent (keyboard accessibility, on-brand). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

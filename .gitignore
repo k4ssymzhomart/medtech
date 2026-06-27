@@ -1,0 +1,33 @@
+# Secrets — never commit. Real keys live in web/.env.local and worker/.env
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/out/
+web/next-env.d.ts
+.vercel/
+*.tsbuildinfo
+
+# Python worker
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+worker/.venv/
+.pytest_cache/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
