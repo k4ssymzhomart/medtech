@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MapPin, Clock, ExternalLink, GitCompareArrows, Navigation, LocateFixed } from "lucide-react";
+import { MapPin, Clock, ExternalLink, GitCompareArrows, Navigation } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import {
   formatPrice,
@@ -32,31 +32,16 @@ export function ResultsList({
   offers,
   minPrice,
   serviceSlug,
-  distanceEnabled = false,
+  userLoc = null,
   sort = "price_asc",
 }: {
   offers: ServiceOffer[];
   minPrice: number | null;
   serviceSlug: string;
-  distanceEnabled?: boolean;
+  userLoc?: { lat: number; lng: number } | null;
   sort?: string;
 }) {
   const [picked, setPicked] = useState<string[]>([]);
-  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [geoState, setGeoState] = useState<"idle" | "asking" | "denied">("idle");
-
-  function locate() {
-    if (!("geolocation" in navigator)) return setGeoState("denied");
-    setGeoState("asking");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGeoState("idle");
-      },
-      () => setGeoState("denied"),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
-    );
-  }
 
   // Attach distance, then optionally re-sort by it (server handles price sorts).
   const view = useMemo(() => {
@@ -93,20 +78,6 @@ export function ResultsList({
 
   return (
     <div className="relative">
-      {distanceEnabled && (
-        <div className="mb-3 flex items-center gap-3 text-sm">
-          <button
-            onClick={locate}
-            className="inline-flex h-8 items-center gap-1.5 rounded-[2px] border border-border px-3 hover:border-foreground"
-          >
-            <LocateFixed size={14} />
-            {userLoc ? "Местоположение определено" : "Рядом со мной"}
-          </button>
-          {geoState === "asking" && <span className="text-muted">определяем…</span>}
-          {geoState === "denied" && <span className="text-muted">не удалось определить геолокацию</span>}
-        </div>
-      )}
-
       <ul className="space-y-2">
         {view.map(({ o, km }) => {
           const isBest = minPrice != null && o.price === minPrice;

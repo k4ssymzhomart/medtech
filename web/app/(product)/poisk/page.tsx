@@ -2,7 +2,7 @@ import { SearchX, ListFilter, Search } from "lucide-react";
 import Link from "next/link";
 import { SearchBar } from "@/components/product/SearchBar";
 import { ResultsFilters } from "@/components/product/ResultsFilters";
-import { ResultsList } from "@/components/product/ResultsList";
+import { ResultsView } from "@/components/product/ResultsView";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { getOffersForQuery, getCategories, type SortKey } from "@/lib/queries/offers";
@@ -105,7 +105,7 @@ export default async function PoiskPage({ searchParams }: { searchParams: Promis
                   description="Сбросьте фильтры или расширьте диапазон цены."
                 />
               ) : (
-                <ResultsList
+                <ResultsView
                   offers={offers}
                   minPrice={minPrice}
                   serviceSlug={service.slug}
