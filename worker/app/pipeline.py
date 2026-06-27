@@ -10,7 +10,7 @@ from __future__ import annotations
 from .config import settings
 from .extract import extract
 from .fetch import fetch
-from .normalize import AUTO_LINK_THRESHOLD, best_match
+from .normalize.llm import AUTO_LINK_THRESHOLD, llm_match_batch
 from .parse import html_to_text
 from .write import archive_missing, upsert_offer
 
@@ -54,13 +54,21 @@ def run_source(sb, run_id: str, source: dict) -> dict:
 
     catalog = (
         sb.table("services_catalog")
-        .select("id, canonical_name, synonyms")
+        .select("id, canonical_name, slug, synonyms")
         .eq("is_active", True)
         .execute()
         .data
     )
 
-    # 4. Normalize + 5. Write.
+    # 4. Normalize — one batched semantic LLM call maps raw names -> catalog.
+    mapping = llm_match_batch(
+        [s.name for s in services],
+        catalog,
+        model=settings.anthropic_model,
+        api_key=settings.anthropic_api_key,
+    )
+
+    # 5. Write.
     seen_offer_ids: list[str] = []
     for s in services:
         counters["rows_found"] += 1
@@ -81,12 +89,12 @@ def run_source(sb, run_id: str, source: dict) -> dict:
             .data[0]
         )
 
-        match = best_match(s.name, catalog)
-        if match.service_id and match.confidence >= AUTO_LINK_THRESHOLD:
+        svc_id, conf = mapping.get(s.name.strip(), (None, 0.0))
+        if svc_id and conf >= AUTO_LINK_THRESHOLD:
             action, offer_id = upsert_offer(
                 sb,
                 clinic_id=clinic_id,
-                service_id=match.service_id,
+                service_id=svc_id,
                 source_id=source_id,
                 raw_name=s.name,
                 price=s.price,
@@ -110,8 +118,8 @@ def run_source(sb, run_id: str, source: dict) -> dict:
                     "raw_extraction_id": ext["id"],
                     "source_id": source_id,
                     "raw_service_name": s.name,
-                    "suggested_service_id": match.service_id,
-                    "confidence": match.confidence,
+                    "suggested_service_id": svc_id,
+                    "confidence": conf,
                     "status": "pending",
                 }
             ).execute()
