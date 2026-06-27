@@ -1,0 +1,157 @@
+MEDSERVICEPRICE.KZ — SOURCE LIST SUMMARY
+Generated: 2026-06-27
+Companion file: sources.txt (pipe-delimited, import-ready)
+
+==========================================================
+TOTALS
+==========================================================
+Validated price-list URLs : 114
+Unique domains            : 68
+Cities covered            : 22 of 22 target cities (+ "multi" for national chains)
+
+By priority:
+  HIGH : 65   (big multi-city labs + full static catalogs)
+  MED  : 31   (single-clinic direct price pages)
+  LOW  : 18   (state-hospital lists, JS-gated, or homepage-linked)
+
+==========================================================
+BREAKDOWN BY CATEGORY
+==========================================================
+  lab                 : 52
+  mixed               : 36
+  diagnostics         : 12
+  doctor_appointments :  8
+  procedures          :  6
+
+==========================================================
+BREAKDOWN BY CITY
+==========================================================
+  almaty           : 24
+  astana           : 10
+  multi (chains)   :  6
+  petropavlovsk    :  6
+  aktobe           :  5
+  pavlodar         :  5
+  semey            :  5
+  ust-kamenogorsk  :  5
+  aktau            :  4
+  karaganda        :  4
+  kokshetau        :  4
+  kostanay         :  4
+  shymkent         :  4
+  atyrau           :  3
+  ekibastuz        :  3
+  kyzylorda        :  3
+  taldykorgan      :  3
+  taraz            :  3
+  temirtau         :  3
+  uralsk           :  3
+  zhezkazgan       :  3
+  rudny            :  2
+  turkestan        :  2
+
+==========================================================
+PARSE THESE FIRST — TOP 10
+(highest cross-clinic overlap + easiest to extract)
+==========================================================
+1. KDL Olymp — https://kdlolymp.kz/pricelist/{city}  (22 cities)
+   Largest KZ lab, 115+ branches. One identical static-HTML template per city,
+   prices in tg, robots-clean, no JS. Maximum overlap (same tests everywhere) and
+   trivial to parse. Start here.
+
+2. Invitro Kazakhstan — https://invitro.kz/analizes/for-doctors/{city}/  (22 cities)
+   Second national lab, 1800+ tests, server-rendered static HTML, same template
+   per city. Huge overlap with KDL on common tests. Crawl the clean /for-doctors/
+   path — the ?CITY_NAME query form is robots-blocked.
+
+3. Gemotest Kazakhstan — https://gemotest.kz/{city}/catalog/  (multi-city)
+   National lab, static category tree with tg prices + "srochno" tier. Strong
+   overlap. Avoid /*? query strings, /cart/ and *.pdf (robots-disallowed).
+
+4. Helix — https://helix.ru/astana/catalog , /almaty/catalog
+   Static tg catalog (KZ pricing despite .ru host). Common-test overlap. Honor
+   robots: ?page=N pagination is disallowed, so walk category paths instead.
+
+5. Medilab Immun (MDI) — https://mdi.kz/analysis-price/  (Almaty + Astana)
+   Single-page WooCommerce catalog, each test carries a code + tg price, plus a
+   downloadable PDF at /pricepdf/. Fetch-confirmed static. Very easy.
+
+6. INVIVO — https://invivo.kz/  (national, 520 collection points)
+   Big overlap engine. Catalog is a JS SPA, but a static "Прейскурант цен" page
+   (invivo.kz/page/?p=prejskurant-cen) and the invivo.103.kz mirror expose prices.
+
+7. Diagnostic Center of Shymkent — https://diagnostik.kz/pricelist
+   Largest single-city catalog found: consults + lab + UZI/KT/MRT/endoscopy in a
+   clean HTML table (?page=N, ?category_id=N). Fetch-confirmed.
+
+8. MC FIT — https://fit-uka.kz/prajs-list.html  (Ust-Kamenogorsk)
+   One massive fully-static HTML price table covering the whole clinic. The single
+   easiest full-clinic scrape in the set.
+
+9. MC Diacent — https://diacent.kz/price  (Karaganda)
+   Large static HTML lab table (Наименование / Раздел / Стоимость). Fetch-confirmed,
+   sitemap present, clean to parse.
+
+10. Dostarmed + Medical Park — https://dostarmed.kz/prajs-1 , https://medicalpark.kz/page/prices/  (Almaty)
+   Two big multi-profile clinic catalogs (приёмы + диагностика + лаборатория) in
+   static tg tables. Fetch-confirmed. Good clinic-side overlap against the labs above.
+
+==========================================================
+VALIDATION NOTES (read before crawling)
+==========================================================
+- Fetch-confirmed (HTTP 200 + real tg prices seen in body): all 22 KDL Olymp
+  cities, 16 Invitro cities + general catalog, both Helix pages, Gemotest, MDI,
+  diagnostik.kz, diacent.kz, mczdorovie excluded (see below), fit-uka, vesnet,
+  pavlodar.magnesia, tararaka, gpk, poliklinika1, medcentr-family, medicus-clinic,
+  cmclinic, nurlab, lordoctor, kazmedclinic, plus the misc clinic set
+  (onclinic, medicalpark, dostarmed, duetclinic, viamed, ockuanysh, emirmed).
+
+- Search-confirmed only (a per-session web_fetch rate-limit, HTTP 429, blocked
+  direct re-fetch of these — exact price URL + tg prices were corroborated via
+  search, but robots.txt / static-vs-JS were not byte-verified). Re-fetch once
+  before trusting: the 4 Invitro cities turkestan / ekibastuz / rudny / zhezkazgan;
+  semey.magnesia; euromed; mediscan; greenclinic; immunotest; the Almaty hospital
+  set (almaty-cgkb, gkb5, gkb4, onko, gp7); the dental set (benefakta, apostol,
+  dental-center, kristall-32, demokrat); quantummed; amira; dea; newlifediagn;
+  cb-temirtau; nova-med; taldpol; omb-zko; amob; ob.sko; divera; neiron; hippokrat.
+
+- NEEDS HEADLESS BROWSER (js_required=yes): invivo, rdc.kz, medicus-clinic,
+  demokratastana, newlifediagn, nova-med (kyzylorda/zhezkazgan), taldpol, omb-zko,
+  divera, tararaka, umc.org.kz. Prices are absent from raw HTML on these.
+
+- Two conflicts resolved by WebSearch:
+  * rdc.kz = Almaty (not Atyrau as one agent guessed). Filed under almaty.
+  * Invitro for-doctors pattern is the canonical catalog path (not /analizes/all/).
+
+==========================================================
+DROPPED / EXCLUDED (do not re-add)
+==========================================================
+- helix.ru/pavlodar/catalog — loads but catalog is empty ("исследований не найдено").
+- helix.kz — dead/parked; helix-lab.kz is a Tilda page with Disallow:/catalog and
+  no per-test list. Use helix.ru city pages instead.
+- mck.kz — parked/for-sale domain. No price page.
+- medel.kz — empty/non-rendering body across /price /prices /ceny. Dropped.
+- synevo.kz — empty JS shell, no indexed price content.
+- aksai-clinic.kz / aksay.kaznmu.edu.kz — the "Прейскурант цен" page is a content-
+  less stub (zero prices). Dropped.
+- mczdorovie.com — flagged as Kurgan, Russia (RUB) by one agent; .com domain,
+  currency unconfirmed. Dropped to avoid wrong-country pricing.
+- 103.kz / i-teka.kz / idoctor.kz / rascenki.kz / med24.kz / 2gis — aggregator and
+  directory portals, not first-party price pages. Excluded by rule (used only to
+  confirm a clinic's city). Note: a few small-city clinics (esp. Turkestan) publish
+  prices ONLY via these aggregators, so no first-party URL met the bar there.
+- Non-KZ domains (.ru / .uz / .kg / .by) encountered during discovery — excluded.
+
+==========================================================
+ROBOTS / CRAWL GUIDANCE
+==========================================================
+- kdlolymp.kz : /pricelist/ and /services/ allowed, no crawl-delay.
+- invitro.kz  : clean /analizes/ paths allowed, no crawl-delay; /*? (incl
+  ?CITY_NAME), /search/, /results/, /qrcode_pricelist/ disallowed.
+- helix.ru / gemotest.kz : base catalog path allowed; all ?query URLs (pagination)
+  disallowed — walk category sub-paths, don't rely on ?page=N.
+- diacent.kz, medcentr-family.kz, kazmedclinic.kz : Crawl-delay:10 (msnbot scope).
+- mczdorovie-style AI-bot blocks seen on a few domains (GPTBot/AICrawler/Google-
+  Extended disallowed) — these target AI training, not search crawling.
+- "unknown" in the robots column = robots.txt could not be byte-fetched (rate
+  limit); check it at crawl time.

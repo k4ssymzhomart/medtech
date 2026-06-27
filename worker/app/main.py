@@ -4,10 +4,8 @@ THE LOOP (per architecture §3): the admin panel never calls the worker. "Run no
 inserts a parse_runs row with status='queued'. This worker polls Supabase, claims
 queued jobs, processes them, and writes results back. Outbound HTTPS only.
 
-Phase 1: claiming works end to end against the live DB, but there is NO parsing.
-A claimed job is marked failed with a clear skeleton message. The real pipeline
-(fetch -> parse -> extract -> normalize -> write) plugs into process_job() in the
-"one source end-to-end" pass.
+Phase 2: a claimed job runs the full pipeline (fetch -> parse -> extract ->
+normalize -> write) via app.pipeline.run_source, then writes status + counters back.
 """
 
 from __future__ import annotations
@@ -18,6 +16,7 @@ import time
 from datetime import datetime, timezone
 
 from .config import settings
+from .pipeline import run_source
 from .supabase_client import get_client
 
 log = logging.getLogger("worker")
@@ -63,30 +62,31 @@ def claim_next_job(sb):
 
 
 def process_job(sb, job) -> None:
-    """Phase 1 skeleton: no parser yet. Log it and fail the run cleanly.
-
-    Phase 2 replaces this body with:
-        fetch -> parse -> LLM extract -> normalize (trgm + pgvector) -> write.
-    """
+    """Run the full pipeline for a claimed run: fetch -> parse -> extract ->
+    normalize -> write. Updates parse_runs status + counters; logs failures."""
     run_id = job["id"]
     log.info("claimed run %s (source %s)", run_id, job.get("source_id"))
 
-    sb.table("parse_logs").insert(
-        {
-            "run_id": run_id,
-            "source_id": job.get("source_id"),
-            "level": "warn",
-            "message": "Phase 1 skeleton: no parser implemented for this source.",
-        }
-    ).execute()
-
-    sb.table("parse_runs").update(
-        {
-            "status": "failed",
-            "finished_at": _now_iso(),
-            "error_summary": "Phase 1 skeleton: parser not implemented",
-        }
-    ).eq("id", run_id).execute()
+    source = (
+        sb.table("sources").select("*").eq("id", job["source_id"]).single().execute().data
+    )
+    try:
+        counters = run_source(sb, run_id, source)
+        sb.table("parse_runs").update(
+            {"status": "success", "finished_at": _now_iso(), **counters}
+        ).eq("id", run_id).execute()
+        sb.table("sources").update(
+            {"last_run_at": _now_iso(), "consecutive_failures": 0}
+        ).eq("id", source["id"]).execute()
+        log.info("run %s OK %s", run_id, counters)
+    except Exception as e:  # noqa: BLE001 — record the failure, keep the loop alive
+        log.exception("pipeline failed for run %s", run_id)
+        sb.table("parse_logs").insert(
+            {"run_id": run_id, "source_id": source["id"], "level": "error", "message": str(e)}
+        ).execute()
+        sb.table("parse_runs").update(
+            {"status": "failed", "finished_at": _now_iso(), "error_summary": str(e)[:500]}
+        ).eq("id", run_id).execute()
 
 
 def main() -> None:

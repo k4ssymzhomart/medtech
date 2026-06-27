@@ -19,6 +19,9 @@ class Settings:
     # stage converts USD -> KZT as `kzt = usd * fx_usd_kzt` and keeps the source
     # value in original_price / original_currency for transparency.
     fx_usd_kzt: float
+    # Anthropic LLM for the structured extraction stage.
+    anthropic_api_key: str
+    anthropic_model: str
 
     @staticmethod
     def from_env() -> "Settings":
@@ -36,6 +39,8 @@ class Settings:
             supabase_service_role_key=key,
             poll_interval=interval,
             fx_usd_kzt=fx,
+            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "").strip(),
+            anthropic_model=os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6").strip(),
         )
 
 

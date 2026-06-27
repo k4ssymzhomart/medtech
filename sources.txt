@@ -1,0 +1,115 @@
+priority|category|name|url|format|city|js_required|direct_pricelist|robots|lang|notes
+HIGH|diagnostics|MDC VESNET|http://www.vesnet-medical.com/price.shtml|html|pavlodar|no|yes|allowed|ru|fetched 200; static HTML price hub with per-category subpages (MRT/MSKT/rentgen/UZI/20+ consult pages/check-up); labs outsourced to INVIVO/OLIMP
+HIGH|diagnostics|Magnesia Diagnostic Center Pavlodar|https://pavlodar.magnesia.kz/cena/|html|pavlodar|no|yes|unknown|ru|fetched 200 (/mrt rendered full MRT price table inline); Philips 1.5T MRT + Toshiba 64 CT; multi-city chain; /cena/ and /cena/price-kt/
+HIGH|diagnostics|Magnesia Diagnostic Center Semey|https://semey.magnesia.kz/cena/|html|semey|no|yes|unknown|ru|same chain/template as Pavlodar (fetch-validated sibling); prices via search (MRT ot 13500 s kontrastom 32000); Stakhanov 17
+HIGH|diagnostics|Diagnostic Center of Shymkent|https://diagnostik.kz/pricelist|html|shymkent|no|yes|allowed|both|fetched 200; huge catalog consults/lab/UZI/KT/MRT/endoscopy; HTML table Kategoriya-Usluga-Tsena; paginated ?page=N and ?category_id=N; RU/KZ toggle
+HIGH|doctor_appointments|Doq-med|https://doq-med.kz/almaty/uslugi/|html|multi|no|yes|crawl-delay:0|ru|doq.kz catalog twin; 25 cities /{city}/uslugi/; per-specialty Stoimost priema ot N tg; /{spec}/clinics/ shows per-clinic prices; AI-bots disallowed Googlebot/Yandex allowed; pagination ?pag=N
+HIGH|lab|KDL Olymp Aktau|https://kdlolymp.kz/pricelist/aktau|html|aktau|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Aktau|https://invitro.kz/analizes/for-doctors/aktau/|html|aktau|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Aktobe|https://kdlolymp.kz/pricelist/aktobe|html|aktobe|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Aktobe|https://invitro.kz/analizes/for-doctors/aktobe/|html|aktobe|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Almaty|https://kdlolymp.kz/pricelist/almaty|html|almaty|no|yes|allowed|both|same template as astana; static HTML tg; /services/{slug} detail urls; city-specific prices
+HIGH|lab|Invitro Almaty|https://invitro.kz/analizes/for-doctors/almaty/|html|almaty|no|yes|allowed|ru|SSR static tg; default catalog city; same template all cities
+HIGH|lab|Helix Almaty|https://helix.ru/almaty/catalog|html|almaty|no|yes|allowed|ru|KZ pricing tg static same structure as astana; item urls /catalog/item/{code}; robots blocks ?query pagination
+HIGH|lab|KDL Olymp Astana|https://kdlolymp.kz/pricelist/astana|html|astana|no|yes|allowed|both|KDL Olymp 115+ branches; static HTML prices in tg; detail pages /services/{slug}; /kz/ and /en/ locale prefixes; single long page no pagination
+HIGH|lab|Invitro Astana|https://invitro.kz/analizes/for-doctors/astana/|html|astana|no|yes|allowed|ru|SSR Bitrix static tg; venipuncture +1390 tg; nested /{city}/{categoryID}/{analysisID}; avoid ?CITY_NAME query (robots-blocked)
+HIGH|lab|Helix Astana|https://helix.ru/astana/catalog|html|astana|no|yes|allowed|ru|serves KZ pricing tg static HTML; canonical /astana/catalog/190-vse-analizy; item urls /catalog/item/{code}; robots blocks ?page=N pagination so use category paths
+HIGH|lab|KDL Olymp Atyrau|https://kdlolymp.kz/pricelist/atyrau|html|atyrau|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Atyrau|https://invitro.kz/analizes/for-doctors/atyrau/|html|atyrau|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Ekibastuz|https://kdlolymp.kz/pricelist/ekibastuz|html|ekibastuz|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Ekibastuz|https://invitro.kz/analizes/for-doctors/ekibastuz/|html|ekibastuz|no|yes|allowed|ru|seed URL canonical Invitro pattern; validation fetch rate-limited 429 not byte-confirmed; re-verify before crawl
+HIGH|lab|KDL Olymp Karaganda|https://kdlolymp.kz/pricelist/karaganda|html|karaganda|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Karaganda|https://invitro.kz/analizes/for-doctors/karaganda/|html|karaganda|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Kokshetau|https://kdlolymp.kz/pricelist/kokshetau|html|kokshetau|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|KDL Olymp Kostanay|https://kdlolymp.kz/pricelist/kostanay|html|kostanay|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Kostanay|https://invitro.kz/analizes/for-doctors/kostanay/|html|kostanay|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Kyzylorda|https://kdlolymp.kz/pricelist/kyzylorda|html|kyzylorda|no|yes|allowed|both|static HTML tg; some city-specific pricing; same template
+HIGH|lab|Invitro Kyzylorda|https://invitro.kz/analizes/for-doctors/kyzylorda/|html|kyzylorda|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|Invitro general catalog|https://invitro.kz/analizes/|html|multi|no|yes|allowed|ru|root of for-doctors catalog defaulting to a city; usable price list tg; switch city via /for-doctors/{city}/ not ?CITY_NAME
+HIGH|lab|Gemotest Kazakhstan|https://gemotest.kz/almaty/catalog/|html|multi|no|yes|allowed|both|per-city /{city}/catalog/ (almaty astana taraz turkestan shymkent +more); deep category tree; tg prices + srochny tier; robots blocks /*? and /cart/ and *.pdf so avoid query strings; switch city via cookie
+HIGH|lab|Medilab Immun MDI|https://mdi.kz/analysis-price/|html|multi|no|yes|allowed|ru|Almaty+Astana lab; WooCommerce single-page full catalog tg; each analysis has code+price; category /service-category/{cat}/; downloadable PDF at /pricepdf/; fetch-confirmed
+HIGH|lab|KDL Olymp Pavlodar|https://kdlolymp.kz/pricelist/pavlodar|html|pavlodar|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Pavlodar|https://invitro.kz/analizes/for-doctors/pavlodar/|html|pavlodar|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Petropavlovsk|https://kdlolymp.kz/pricelist/petropavlovsk|html|petropavlovsk|no|yes|allowed|both|static HTML tg; some city-specific items; same template
+HIGH|lab|Invitro Petropavlovsk|https://invitro.kz/analizes/for-doctors/petropavlovsk/|html|petropavlovsk|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Rudny|https://kdlolymp.kz/pricelist/rudny|html|rudny|no|yes|allowed|both|loads full pricelist tg static; CAVEAT page title and city selector mislabel as Astana but URL serves rudny prices; trust url slug not page title
+HIGH|lab|Invitro Rudny|https://invitro.kz/analizes/for-doctors/rudny/|html|rudny|no|yes|allowed|ru|seed URL canonical Invitro pattern; validation fetch rate-limited 429 not byte-confirmed; re-verify before crawl
+HIGH|lab|KDL Olymp Semey|https://kdlolymp.kz/pricelist/semey|html|semey|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Semey|https://invitro.kz/analizes/for-doctors/semey/|html|semey|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Shymkent|https://kdlolymp.kz/pricelist/shymkent|html|shymkent|no|yes|allowed|both|static HTML tg; city-specific pricing; same parse template
+HIGH|lab|Invitro Shymkent|https://invitro.kz/analizes/for-doctors/shymkent/|html|shymkent|no|yes|allowed|ru|SSR static tg; identical price-table template
+HIGH|lab|KDL Olymp Taldykorgan|https://kdlolymp.kz/pricelist/taldykorgan|html|taldykorgan|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Taldykorgan|https://invitro.kz/analizes/for-doctors/taldykorgan/|html|taldykorgan|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Taraz|https://kdlolymp.kz/pricelist/taraz|html|taraz|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Taraz|https://invitro.kz/analizes/for-doctors/taraz/|html|taraz|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Temirtau|https://kdlolymp.kz/pricelist/temirtau|html|temirtau|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Temirtau|https://invitro.kz/analizes/for-doctors/temirtau/|html|temirtau|no|yes|allowed|ru|search-confirmed live indexed priced sub-pages; same SSR template as 16 byte-verified cities
+HIGH|lab|KDL Olymp Turkestan|https://kdlolymp.kz/pricelist/turkestan|html|turkestan|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Turkestan|https://invitro.kz/analizes/for-doctors/turkestan/|html|turkestan|no|yes|allowed|ru|seed URL canonical Invitro pattern; validation fetch rate-limited 429 not byte-confirmed; re-verify before crawl
+HIGH|lab|KDL Olymp Uralsk|https://kdlolymp.kz/pricelist/uralsk|html|uralsk|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Uralsk|https://invitro.kz/analizes/for-doctors/uralsk/|html|uralsk|no|yes|allowed|ru|SSR static tg; same template
+HIGH|lab|KDL Olymp Ust-Kamenogorsk|https://kdlolymp.kz/pricelist/ust-kamenogorsk|html|ust-kamenogorsk|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Ust-Kamenogorsk|https://invitro.kz/analizes/for-doctors/ust-kamenogorsk/|html|ust-kamenogorsk|no|yes|allowed|ru|SSR static tg; slug uses hyphen; same template
+HIGH|lab|KDL Olymp Zhezkazgan|https://kdlolymp.kz/pricelist/zhezkazgan|html|zhezkazgan|no|yes|allowed|both|static HTML tg; same template
+HIGH|lab|Invitro Zhezkazgan|https://invitro.kz/analizes/for-doctors/zhezkazgan/|html|zhezkazgan|no|yes|allowed|ru|probed missing city; canonical Invitro pattern; fetch rate-limited 429 not byte-confirmed; re-verify before crawl
+HIGH|mixed|Daru Clinic rehab MC|http://daru-clinic.kz/files/price.pdf|pdf|aktobe|no|yes|unknown|ru|direct PDF price list (homepage JS/empty on fetch); prices via search (kardiolog 5000 revmatolog 15000)
+HIGH|mixed|Medical Park|https://medicalpark.kz/page/prices/|html|almaty|no|yes|allowed|ru|full catalog tables tg (priemy/diagnostika/laboratoriya/statsionar)
+HIGH|mixed|Dostarmed Servis|https://dostarmed.kz/prajs-1|html|almaty|no|yes|allowed|ru|large static price list tg; KZ version at /kk/prajs-1; Atyrau branch on separate subdomain atyrau.dostarmed.kz
+HIGH|mixed|Central City Clinical Hospital CGKB|https://almaty-cgkb.kz/ru/medser/price|html|almaty|unknown|yes|unknown|ru|search-validated; searchable price catalog (consults/surgery/dentistry/dialysis/lab); also static /prejskurant-cen/; big public hospital
+HIGH|mixed|On Clinic Astana|https://astana.onclinic.kz/ceni/|html|astana|no|yes|allowed|ru|full price page; complex diagnostics priced inline; multi-city brand (Almaty/Oskemen on separate domains)
+HIGH|mixed|Green Clinic|https://greenclinic.kz/ru/prices/stomatologiya|html|astana|unknown|yes|unknown|ru|search-validated explicit prices; multi-profile center; price pages per dept /ru/prices/{dept} e.g. oftalmologiya; RU and EN
+HIGH|mixed|MC Diacent|https://diacent.kz/price|html|karaganda|no|yes|crawl-delay:10|ru|fetched 200; large static HTML lab price table (Naimenovanie/Razdel/Stoimost); Drupal; sitemap present
+HIGH|mixed|LDC Gippokrat Kostanay|https://gpk.kz/прайс-лист|html|kostanay|no|yes|allowed|ru|fetched 200; full static HTML price table; consults/lab/UZI/rentgen/endoscopy/checkup tg; WordPress; Cyrillic slug
+HIGH|mixed|Polyclinic No7 Semey CDC|https://diagnose.kz/ru/paczientu/prejskurant-czen/|html|semey|unknown|yes|unknown|ru|municipal CDC price list; MRI/CT/mammo/UZI; Kazakh version at /paczientu/aqyly-qyzmetter-prejskuranty.html
+HIGH|mixed|MC Brak i Semya Tararaka|https://online.tararaka.kz/#price|html|taraz|yes|yes|allowed|ru|fetched 200; redirect from tararaka.kz to MyClinic.kz platform; full inline price list (consults/lab/EKO/procedures); robots allows all except /api /u
+HIGH|mixed|MC FIT|https://fit-uka.kz/prajs-list.html|html|ust-kamenogorsk|no|yes|unknown|ru|fetched 200; massive single static HTML price table (priemy/LOR/UZI/gynecology/physio/massage) tg col; excellent scrape target
+HIGH|mixed|Euromed clinic|https://www.euromed.kz/price_all|html|ust-kamenogorsk|unknown|yes|unknown|ru|~5000-position searchable price list; per-section node pages e.g. /node/97 UZI; lab+UZI+MRT+rentgen+endoscopy
+MED|diagnostics|Regional Diagnostic Center RDC Almaty|https://rdc.kz/price/|html|almaty|yes|yes|allowed|ru|WebSearch confirms Almaty (not Atyrau); price landing is service tree linking leaf price pages; KT 128 SOMATOM MRT 1.5T UZI; Bitrix PAGEN allowed
+MED|diagnostics|MEDISCAN MRI|https://mediscan.kz/mrt|html|astana|unknown|yes|unknown|ru|search-validated; Astana+Almaty diagnostics; per-modality price pages /mrt /kt /radiologiya; MRT ot 20000 tg; subdomain mrt.mediscan.kz
+MED|diagnostics|MEDISCAN CT|https://mediscan.kz/kt|html|astana|unknown|yes|unknown|ru|search-validated; CT price page; same network as /mrt
+MED|diagnostics|Hippokrat diagnostic center|https://hippokrat.kz/|html|karaganda|unknown|no|unknown|ru|3T MRT/CT/UZI center Karaganda; prices via search (UZI ot 8000 MRT/KT ot 20000); locate price path; homepage captured
+MED|diagnostics|CDC Deya Petropavlovsk|https://dea.kz/цены/price.html|html|petropavlovsk|unknown|yes|unknown|ru|static .html price page (the /price/ route empty=JS; .html variant is real list); lab + diagnostics
+MED|diagnostics|MC Zhan-Er|https://zhan-er.kz/ru/paczientu/mrt-kt.html|html|semey|unknown|yes|unknown|ru|own-domain MRT/KT price page Semey; same CMS family as diagnose.kz
+MED|doctor_appointments|Emirmed|https://emirmed.kz/ru/specialists/|html|almaty|no|yes|allowed|ru|doctor cards show priem prices tg (old/new); fuller catalog likely at /ru/czenyi; static HTML
+MED|doctor_appointments|Benefakta Dental|https://www.benefaktadental.kz/tseny|html|almaty|unknown|yes|unknown|ru|search-validated; dental price list + per-service /uslugi/{x}; case-cost calculator
+MED|doctor_appointments|APOSTOL DENTAL|https://apostoldent.kz/price|html|almaty|unknown|yes|unknown|ru|search-validated; dental price list Almaty
+MED|doctor_appointments|Dental-Center|https://dental-center.kz/ceny/|html|almaty|unknown|yes|unknown|ru|search-validated; dental price page Almaty
+MED|doctor_appointments|MC Family Ekibastuz|https://medcentr-family.kz/prajs-list|html|ekibastuz|no|yes|allowed|ru|fetched 200; static HTML doctor consult prices primary/repeat tg; sub-pages dnevnoj-stacionar + UZI; crawl-delay:10 msnbot
+MED|doctor_appointments|Kristall 32 dental clinic|https://kristall-32.kz/price.html|html|shymkent|unknown|yes|unknown|ru|search-validated; premium dental Shymkent; static .html price page; ortho/implant/CT
+MED|lab|NurLab|https://nurlab.kz/prejskurant-laboratorij/|html|almaty|no|yes|unknown|ru|fetched 200; Divi WP; full lab table name/price/readiness/tube; clinic prices at /prejskurant-kliniki/; static
+MED|lab|Immunotest|https://immunotest.kz/analyzes|html|almaty|unknown|yes|unknown|ru|search-validated prices (PCR ot 2300 tg checkup 40000 tg); 500+ tests; catalog /analyzes sub-pages /analyzes/{id}; checkups /analyzes/set
+MED|lab|INVIVO|https://invivo.kz/ru/almaty/analyzes/|html|multi|yes|yes|unknown|ru|national lab 520 collection points; SPA React-hydrated catalog per-city /ru/{city}/; static price page also at invivo.kz/page/?p=prejskurant-cen (per search); mirror invivo.103.kz
+MED|mixed|MC Neiron Aktau|https://neironclinic.kz/prejskurant-czen/|html|aktau|unknown|yes|unknown|ru|search-confirmed Preiskurant page (also /prajs2/); multispecialty + lab + UZI/CT; WordPress
+MED|mixed|MC Kuanysh|https://ockuanysh.kz/czenyi.html|html|aktobe|no|yes|allowed|ru|static price page tg; two Aktobe addresses; .html allowed only *? disallowed
+MED|mixed|KazMed Clinic|https://kazmedclinic.kz/ceny|html|almaty|no|yes|crawl-delay:10|ru|Almaty multi-profile clinic since 2006; one long tg price page as markdown tables (labs+procedures+appointments); static HTML; crawl-delay:10 for msnbot only * allowed; fetch-confirmed
+MED|mixed|Duet Clinic|https://duetclinic.kz/pricelist/|html|almaty|no|yes|allowed|ru|full prices tg (UZI/consultations/vascular surgery); Bitrix; pricelist path crawlable despite *? disallow
+MED|mixed|Credo Med Clinic|https://cmclinic.kz/pricelist/|html|almaty|no|yes|allowed|ru|fetched 200; WordPress/Elementor; 2026 price list single page; static HTML
+MED|mixed|LOR-Praktika ENT clinic|https://lordoctor.kz/lab/|html|almaty|no|yes|allowed|ru|fetched 200; DLE CMS; ENT+lab+UZI+KLKT; robots Disallow /*? so avoid query params .html OK; static
+MED|mixed|City Clinical Hospital No5 GKB5|https://www.gkb5.kz/preyskurant-tsen/|html|almaty|unknown|yes|unknown|ru|search-validated; public hospital price list; maxillofacial+ENT surgery
+MED|mixed|City Clinical Hospital No4|https://gkb4-almaty.kz/prejskurant-tsen-na-platnye-uslugi/|html|almaty|unknown|yes|unknown|ru|search-validated; public hospital paid-services price list
+MED|mixed|MC Medicus Kokshetau|https://medicus-clinic.kz/uslugi/|html|kokshetau|yes|yes|allowed|ru|fetched 200; static service catalog by specialty; price values render via JS/click; also /laboratory/ /diagnostika/ /procedury/
+MED|mixed|City Polyclinic No1 Kostanay|https://poliklinika1.kz/ru/price|html|kostanay|unknown|yes|unknown|both|fetched 200; state polyclinic preiskurant; ru/kz toggle; large page
+MED|mixed|MC DiVera|https://divera.kz/ru/service/price-list|html|multi|yes|yes|unknown|ru|national chain 13 cities (Atyrau Kokshetau Petropavlovsk +more); combined price list page; JS-heavy; per-city addresses
+MED|mixed|MC YuventaMed|https://yuventamed.kz/прайс-лист/|html|ust-kamenogorsk|unknown|yes|unknown|ru|own-domain price page (Cyrillic prajs-list slug); multi-profile (terapevt/LOR/gynecolog/pediatr/kardiolog)
+MED|procedures|Via Medical|https://viamed.kz/procedure|html|almaty|no|yes|allowed|ru|alphabetised procedure price catalog ot X tg; Nuxt SSR so prices present in HTML
+MED|procedures|QUANTUM Clinic|https://quantummed.kz/price-list/|html|almaty|unknown|yes|unknown|ru|search-validated; plastic surgery; consult ot 8000 tg; full price list single page
+MED|procedures|Almaty Region Oncology Center|https://almatyregion-onko.kz/прайс-лист/|html|almaty|unknown|yes|unknown|ru|search-validated; oncology price list; Cyrillic slug encode as %D0..; WP
+MED|procedures|Amira Clinic|https://amiraclinic.kz/price/159-plasticheskaya-khirurgiya|html|almaty|unknown|yes|unknown|ru|search-validated; plastic surgery price section; pattern /price/{id}-{slug} implies multi-category catalog
+LOW|diagnostics|Nova Medical Centre Kyzylorda|https://nova-med.kz/kyzylorda|html|kyzylorda|yes|no|unknown|ru|chain; per-service price pages /kyzylorda/services/...; JS-rendered; only Kyzylorda private option w/ own domain
+LOW|diagnostics|Nova Medical Centre Zhezkazgan|https://nova-med.kz/zheskazgan/services|html|zhezkazgan|yes|no|unknown|ru|chain; service+price pages Zhezkazgan (MRT 1.5T); JS-rendered; co-located at Central hospital
+LOW|doctor_appointments|Demokrat dental clinic|https://demokratastana.kz/prices|html|astana|yes|yes|unknown|ru|search-validated; dental Astana; /prices returned empty body on fetch so likely JS SPA
+LOW|lab|Invitro Kokshetau|https://invitro.kz/analizes/for-doctors/kokshetau/|html|kokshetau|unknown|unknown|allowed|ru|fetched 200 but empty body twice; possibly no local catalog or bot-gate; KDL covers Kokshetau; re-verify
+LOW|mixed|Kasiet Clinic Aktau|https://kasiet-klinika.kz/|html|aktau|unknown|no|unknown|ru|own-domain clinic (medosmotr/analyses/PCR/UZI); price page linked from homepage; locate path
+LOW|mixed|Daru Zharygy ophthalmology|https://daru-zharygy.kz/|html|aktobe|unknown|no|unknown|ru|own-domain ophthalmology Aktobe; price list exists (mirror daru-zharygy.103.kz/pricing); locate price path; homepage captured
+LOW|mixed|City Polyclinic No7 Almaty|https://gp7almaty.kz/platnie-mob.html|html|almaty|unknown|yes|unknown|ru|search-validated; static .html paid-services page; small catalog; public PHC
+LOW|mixed|NNMC National Scientific Medical Center|https://www.nnmc.kz/storage/app/uploads/public/6a0/45c/48b/6a045c48b152b286520515.pdf|pdf|astana|no|yes|allowed|ru|CORRECTED from /ru/doctors (not a pricelist) to linked PDF preiskurant ~61KB; Check-up PDF also available
+LOW|mixed|UMC University Medical Center|https://umc.org.kz/pricelist-2/|html|astana|yes|yes|unknown|ru|CORRECTED from /en/specialists-2; whole domain returns empty body to fetcher (bot/WAF gated); RU pricelist+PDF exist per search; needs headless re-validation
+LOW|mixed|Akmola Regional Hospital Kokshetau|https://amob.kz/ru/prejskurant-tsen|html|kokshetau|unknown|yes|unknown|ru|own-domain regional hospital preiskurant-tsen; Kokshetau
+LOW|mixed|MC Mitraliya Petropavlovsk|https://mitraliya.kz/pricing|html|petropavlovsk|yes|no|unknown|both|fetched 200; JS calculator preiskurant but prices currently under correction (no numbers shown); Joomla; ru/kz
+LOW|mixed|MC NewLife Petropavlovsk|https://newlifediagn.kz/price/|html|petropavlovsk|yes|yes|unknown|ru|search-confirmed price page w/ services calculator; JS-rendered (200KB+ JS body)
+LOW|mixed|North Kazakhstan Regional Hospital Petropavlovsk|https://ob.sko.kz/page/read/Prejskurant_cen_na_medicinskie_uslugi.html?lang=ru|html|petropavlovsk|unknown|yes|unknown|both|regional hospital preiskurant page; lang param ru/kz
+LOW|mixed|Taldykorgan City Polyclinic|https://taldpol.kz/ru/platnye-uslugi|html|taldykorgan|yes|yes|unknown|both|own-domain state polyclinic platnye-uslugi; fetch returned empty body=JS; ru/kz
+LOW|mixed|Central Hospital Temirtau|https://cb-temirtau.kz/nashi-uslugi/prejskurant-tsen-na-platnye-meditsinskie-uslugi|html|temirtau|unknown|yes|unknown|ru|search-confirmed state hospital preiskurant (multiple dept price pages); Joomla
+LOW|mixed|West Kazakhstan Regional Hospital Uralsk|http://omb-zko.kz/ru/perechen-platnyh-uslug/|html|uralsk|yes|yes|unknown|ru|own-domain regional hospital paid-services list; http only; fetch empty body=JS; Savicheva 85 Oral
+LOW|procedures|Dr Bubnovsky Center Atyrau|https://bubnovsky.org/atyrau/prices/|html|atyrau|unknown|yes|unknown|ru|kinesitherapy/rehab Atyrau-specific price page; narrow scope (MTB sessions consultations)
+LOW|procedures|StomLine dental clinic|https://stomlinepvl.kz/услуги/|html|pavlodar|unknown|no|unknown|ru|own-domain dental Pavlodar; services/price page (Cyrillic uslugi slug); verify direct price table
