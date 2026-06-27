@@ -31,3 +31,8 @@ supabase/.temp/
 *.log
 .idea/
 .vscode/
+
+# Local assistant/editor config — not published
+.claude/
+CLAUDE.md
+AGENTS.md
