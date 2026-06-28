@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MapPin, Clock, ExternalLink, GitCompareArrows, Navigation } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ClinicLogo } from "@/components/ui/ClinicLogo";
+import { twogisRoute } from "@/lib/utils/maps";
 import {
   formatPrice,
   formatFreshness,
@@ -124,6 +125,16 @@ export function ResultsList({
                     <Badge variant={fresh === "fresh" ? "fresh" : "stale"}>
                       {formatFreshness(o.last_seen_at)}
                     </Badge>
+                    {clinic.lat != null && clinic.lng != null && (
+                      <a
+                        href={twogisRoute(clinic.lat, clinic.lng)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-muted-2 hover:text-foreground"
+                      >
+                        <Navigation size={11} /> маршрут
+                      </a>
+                    )}
                     {o.source_url && (
                       <a
                         href={o.source_url}

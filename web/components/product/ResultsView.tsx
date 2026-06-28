@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { List, Map as MapIcon, LocateFixed } from "lucide-react";
+import { List, Map as MapIcon, LocateFixed, Share2, Check } from "lucide-react";
 import { ResultsList } from "@/components/product/ResultsList";
 import type { ServiceOffer } from "@/lib/queries/offers";
 
@@ -32,6 +32,17 @@ export function ResultsView({
   const [view, setView] = useState<"list" | "map">("list");
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [geoState, setGeoState] = useState<"idle" | "asking" | "denied">("idle");
+  const [shared, setShared] = useState(false);
+
+  function share() {
+    navigator.clipboard?.writeText(window.location.href).then(
+      () => {
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      },
+      () => {},
+    );
+  }
 
   function locate() {
     if (!("geolocation" in navigator)) return setGeoState("denied");
@@ -65,19 +76,28 @@ export function ResultsView({
           {tab("list", <List size={14} />, "Список")}
           {tab("map", <MapIcon size={14} />, "Карта")}
         </div>
-        {distanceEnabled && (
-          <div className="flex items-center gap-2 text-sm">
-            <button
-              onClick={locate}
-              className="inline-flex h-8 items-center gap-1.5 rounded-[2px] border border-border px-3 hover:border-foreground"
-            >
-              <LocateFixed size={14} />
-              {userLoc ? "Местоположение определено" : "Рядом со мной"}
-            </button>
-            {geoState === "asking" && <span className="text-muted">определяем…</span>}
-            {geoState === "denied" && <span className="text-muted">геолокация недоступна</span>}
-          </div>
-        )}
+        <div className="flex items-center gap-2 text-sm">
+          {distanceEnabled && (
+            <>
+              <button
+                onClick={locate}
+                className="inline-flex h-8 items-center gap-1.5 rounded-[2px] border border-border px-3 hover:border-foreground"
+              >
+                <LocateFixed size={14} />
+                {userLoc ? "Местоположение определено" : "Рядом со мной"}
+              </button>
+              {geoState === "asking" && <span className="text-muted">определяем…</span>}
+              {geoState === "denied" && <span className="text-muted">геолокация недоступна</span>}
+            </>
+          )}
+          <button
+            onClick={share}
+            className="inline-flex h-8 items-center gap-1.5 rounded-[2px] border border-border px-3 hover:border-foreground"
+          >
+            {shared ? <Check size={14} className="text-success" /> : <Share2 size={14} />}
+            {shared ? "Скопировано" : "Поделиться"}
+          </button>
+        </div>
       </div>
 
       {view === "list" ? (

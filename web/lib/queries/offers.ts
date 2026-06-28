@@ -37,6 +37,7 @@ export type OffersResult = {
   offers: ServiceOffer[];
   cities: string[]; // all cities offering this service (for the filter), before city filter
   minPrice: number | null;
+  appliedCity: string | null; // the city actually filtered to (null = all cities)
 };
 
 const SERVICE_SELECT = "id, canonical_name, slug, category:service_categories(name)";
@@ -103,7 +104,9 @@ export type OffersOpts = {
 };
 
 export async function getOffersForQuery(q: string, opts: OffersOpts = {}): Promise<OffersResult> {
-  const empty: OffersResult = { service: null, alternatives: [], offers: [], cities: [], minPrice: null };
+  const empty: OffersResult = {
+    service: null, alternatives: [], offers: [], cities: [], minPrice: null, appliedCity: null,
+  };
   try {
     const { primary, alternatives } = await resolveService(q, opts.category);
     if (!primary) return empty;
@@ -137,7 +140,22 @@ export async function getOffersForQuery(q: string, opts: OffersOpts = {}): Promi
       (a, b) => a.localeCompare(b, "ru"),
     );
 
-    if (opts.city) offers = offers.filter((o) => o.clinic?.city === opts.city);
+    // Default to the richest city (most distinct clinics) so a no-city search doesn't return
+    // the same brand repeated across 20 cities. "all" shows every city; an explicit city wins.
+    let appliedCity: string | null;
+    if (opts.city === "all") {
+      appliedCity = null;
+    } else if (opts.city) {
+      appliedCity = opts.city;
+    } else {
+      const byCity = new Map<string, Set<string>>();
+      for (const o of offers) {
+        const c = o.clinic?.city;
+        if (c) (byCity.get(c) ?? byCity.set(c, new Set()).get(c)!).add(o.clinic!.id);
+      }
+      appliedCity = [...byCity.entries()].sort((a, b) => b[1].size - a[1].size)[0]?.[0] ?? null;
+    }
+    if (appliedCity) offers = offers.filter((o) => o.clinic?.city === appliedCity);
     if (opts.minPrice != null) offers = offers.filter((o) => o.price >= opts.minPrice!);
     if (opts.maxPrice != null) offers = offers.filter((o) => o.price <= opts.maxPrice!);
 
@@ -147,7 +165,7 @@ export async function getOffersForQuery(q: string, opts: OffersOpts = {}): Promi
     if (opts.sort === "price_desc") offers.sort((a, b) => b.price - a.price);
     else if (opts.sort !== "distance") offers.sort((a, b) => a.price - b.price);
 
-    return { service: primary, alternatives, offers, cities, minPrice };
+    return { service: primary, alternatives, offers, cities, minPrice, appliedCity };
   } catch {
     return empty;
   }

@@ -3,6 +3,7 @@ import { ArrowLeft, GitCompareArrows } from "lucide-react";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ClinicLogo } from "@/components/ui/ClinicLogo";
 import { getCompareData } from "@/lib/queries/clinic";
 import { formatPrice } from "@/lib/utils/format";
 
@@ -17,6 +18,13 @@ export default async function ComparePage({
   const sp = await searchParams;
   const ids = (sp.clinics ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   const { clinics, rows } = ids.length ? await getCompareData(ids) : { clinics: [], rows: [] };
+
+  // "Cheapest in N services" tally per clinic (only counts rows with >1 priced clinic).
+  const wins: Record<string, number> = {};
+  for (const r of rows) {
+    if (Object.keys(r.prices).length < 2) continue;
+    for (const c of clinics) if (r.prices[c.id] === r.min) wins[c.id] = (wins[c.id] ?? 0) + 1;
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -41,9 +49,15 @@ export default async function ComparePage({
               <TR>
                 <TH className="min-w-[220px]">Услуга</TH>
                 {clinics.map((c) => (
-                  <TH key={c.id} className="text-right">
-                    <Link href={`/klinika/${c.id}`} className="hover:text-accent">{c.name}</Link>
-                    <div className="font-normal normal-case text-muted-2">{c.city}</div>
+                  <TH key={c.id} className="text-right align-top">
+                    <div className="flex flex-col items-end gap-1">
+                      <ClinicLogo name={c.name} size="sm" />
+                      <Link href={`/klinika/${c.id}`} className="hover:text-accent">{c.name}</Link>
+                      <span className="font-normal normal-case text-muted-2">{c.city}</span>
+                      {wins[c.id] ? (
+                        <span className="font-normal normal-case text-accent">дешевле в {wins[c.id]}</span>
+                      ) : null}
+                    </div>
                   </TH>
                 ))}
               </TR>

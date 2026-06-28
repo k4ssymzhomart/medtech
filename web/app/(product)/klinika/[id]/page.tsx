@@ -4,6 +4,7 @@ import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ClinicLogo } from "@/components/ui/ClinicLogo";
+import { Sparkline } from "@/components/ui/Sparkline";
 import { ClinicMiniMap } from "@/components/product/ClinicMiniMap";
 import { getClinic } from "@/lib/queries/clinic";
 import { twogisRoute } from "@/lib/utils/maps";
@@ -155,7 +156,12 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
                     <TD>
                       <Badge variant={fresh === "fresh" ? "fresh" : "stale"}>{formatFreshness(o.last_seen_at)}</Badge>
                     </TD>
-                    <TD className="numeric text-right font-semibold tabular-nums">{formatPrice(o.price)}</TD>
+                    <TD className="text-right">
+                      <span className="inline-flex items-center gap-2">
+                        <Sparkline points={o.history} />
+                        <span className="numeric font-semibold tabular-nums">{formatPrice(o.price)}</span>
+                      </span>
+                    </TD>
                   </TR>
                 );
               })}

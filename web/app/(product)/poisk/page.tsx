@@ -25,7 +25,7 @@ export default async function PoiskPage({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
 
-  const [{ service, alternatives, offers, cities, minPrice }, categories, distanceEnabled] =
+  const [{ service, alternatives, offers, cities, minPrice, appliedCity }, categories, distanceEnabled] =
     await Promise.all([
       q
         ? getOffersForQuery(q, {
@@ -35,7 +35,7 @@ export default async function PoiskPage({ searchParams }: { searchParams: Promis
             maxPrice: sp.max ? Number(sp.max) : undefined,
             sort: (sp.sort as SortKey) ?? "price_asc",
           })
-        : Promise.resolve({ service: null, alternatives: [], offers: [], cities: [], minPrice: null }),
+        : Promise.resolve({ service: null, alternatives: [], offers: [], cities: [], minPrice: null, appliedCity: null }),
       getCategories(),
       getFlag("distance_sort"),
     ]);
@@ -75,8 +75,8 @@ export default async function PoiskPage({ searchParams }: { searchParams: Promis
             <span className="text-sm text-muted">
               {offers.length
                 ? `${offers.length} ${offers.length === 1 ? "клиника" : "клиник"}${
-                    minPrice != null ? `, от ${formatPrice(minPrice)}` : ""
-                  }`
+                    appliedCity ? ` в городе ${appliedCity}` : ""
+                  }${minPrice != null ? `, от ${formatPrice(minPrice)}` : ""}`
                 : "нет актуальных предложений"}
             </span>
           </div>
@@ -96,7 +96,7 @@ export default async function PoiskPage({ searchParams }: { searchParams: Promis
           )}
 
           <div className="mt-6 grid gap-8 lg:grid-cols-[240px_1fr]">
-            <ResultsFilters cities={cities} categories={categories} distanceEnabled={distanceEnabled} />
+            <ResultsFilters cities={cities} categories={categories} distanceEnabled={distanceEnabled} currentCity={appliedCity} />
             <section>
               {offers.length === 0 ? (
                 <EmptyState

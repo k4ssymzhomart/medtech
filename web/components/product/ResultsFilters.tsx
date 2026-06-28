@@ -11,10 +11,12 @@ export function ResultsFilters({
   cities,
   categories,
   distanceEnabled,
+  currentCity = null,
 }: {
   cities: string[];
   categories: CategoryOption[];
   distanceEnabled: boolean;
+  currentCity?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -49,8 +51,8 @@ export function ResultsFilters({
       <div className="space-y-3">
         <div>
           <label className="mb-1 block text-xs text-muted">Город</label>
-          <Select value={sp.get("city") ?? ""} onChange={(e) => set("city", e.target.value)}>
-            <option value="">Все города</option>
+          <Select value={sp.get("city") || currentCity || "all"} onChange={(e) => set("city", e.target.value)}>
+            <option value="all">Все города</option>
             {cities.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}

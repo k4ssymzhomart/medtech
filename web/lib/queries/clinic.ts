@@ -9,6 +9,7 @@ export type ClinicOffer = {
   duration_days: number | null;
   source_url: string | null;
   service: { id: string; canonical_name: string; slug: string; category: { name: string } | null } | null;
+  history: number[]; // price points over time (for the sparkline); often 1 until re-runs accrue
 };
 
 export type ClinicDetail = {
@@ -54,6 +55,23 @@ export async function getClinic(id: string): Promise<ClinicDetail | null> {
     list.sort((a, b) =>
       (a.service!.canonical_name).localeCompare(b.service!.canonical_name, "ru"),
     );
+
+    // Attach price history (sparkline). Thin until re-runs accumulate points.
+    const ids = list.map((o) => o.id);
+    if (ids.length) {
+      const { data: hist } = await sb
+        .from("price_history")
+        .select("price_offer_id, price, recorded_at")
+        .in("price_offer_id", ids)
+        .order("recorded_at");
+      const byOffer = new Map<string, number[]>();
+      for (const h of (hist ?? []) as { price_offer_id: string; price: number }[]) {
+        (byOffer.get(h.price_offer_id) ?? byOffer.set(h.price_offer_id, []).get(h.price_offer_id)!).push(
+          Number(h.price),
+        );
+      }
+      for (const o of list) o.history = byOffer.get(o.id) ?? [];
+    }
     return { clinic: clinic as ClinicDetail["clinic"], offers: list };
   } catch {
     return null;
