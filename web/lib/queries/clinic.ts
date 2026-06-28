@@ -23,6 +23,7 @@ export type ClinicDetail = {
     rating: number | null;
     lat: number | null;
     lng: number | null;
+    working_hours: import("@/lib/utils/hours").Schedule | null;
   };
   offers: ClinicOffer[];
 };
@@ -36,7 +37,7 @@ export async function getClinic(id: string): Promise<ClinicDetail | null> {
     const sb = createServerClient();
     const { data: clinic } = await sb
       .from("clinics")
-      .select("id, name, city, address, phone, website_url, rating, lat, lng")
+      .select("id, name, city, address, phone, website_url, rating, lat, lng, working_hours")
       .eq("id", id)
       .single();
     if (!clinic) return null;

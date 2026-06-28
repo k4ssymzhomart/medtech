@@ -19,6 +19,7 @@ type SP = {
   min?: string;
   max?: string;
   sort?: string;
+  open?: string;
 };
 
 export default async function PoiskPage({ searchParams }: { searchParams: Promise<SP> }) {
@@ -34,6 +35,7 @@ export default async function PoiskPage({ searchParams }: { searchParams: Promis
             minPrice: sp.min ? Number(sp.min) : undefined,
             maxPrice: sp.max ? Number(sp.max) : undefined,
             sort: (sp.sort as SortKey) ?? "price_asc",
+            openNow: sp.open === "1",
           })
         : Promise.resolve({ service: null, alternatives: [], offers: [], cities: [], minPrice: null, appliedCity: null }),
       getCategories(),

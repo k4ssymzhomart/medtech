@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MapPin, Clock, ExternalLink, GitCompareArrows, Navigation } from "lucide-react";
+import { MapPin, Clock, ExternalLink, GitCompareArrows, Navigation, Star, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ClinicLogo } from "@/components/ui/ClinicLogo";
 import { twogisRoute } from "@/lib/utils/maps";
+import { isOpenNow } from "@/lib/utils/hours";
 import {
   formatPrice,
   formatFreshness,
@@ -87,6 +88,7 @@ export function ResultsList({
           const t = turnaround(o.duration_days);
           const clinic = o.clinic!;
           const checked = picked.includes(clinic.id);
+          const open = isOpenNow(clinic.working_hours);
           return (
             <li
               key={o.id}
@@ -104,6 +106,13 @@ export function ResultsList({
                     {clinic.name}
                   </Link>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+                    {clinic.rating != null && (
+                      <span className="inline-flex items-center gap-1 text-foreground">
+                        <Star size={12} className="fill-current text-warning" />
+                        {clinic.rating}
+                      </span>
+                    )}
+                    {open && <span className="text-success">работает сейчас</span>}
                     <span className="inline-flex items-center gap-1">
                       <MapPin size={12} />
                       {[clinic.city, clinic.address].filter(Boolean).join(", ") || "город не указан"}
@@ -125,6 +134,14 @@ export function ResultsList({
                     <Badge variant={fresh === "fresh" ? "fresh" : "stale"}>
                       {formatFreshness(o.last_seen_at)}
                     </Badge>
+                    {clinic.phone && (
+                      <a
+                        href={`tel:${clinic.phone.replace(/[^+\d]/g, "")}`}
+                        className="inline-flex items-center gap-1 text-xs text-muted-2 hover:text-foreground"
+                      >
+                        <Phone size={11} /> позвонить
+                      </a>
+                    )}
                     {clinic.lat != null && clinic.lng != null && (
                       <a
                         href={twogisRoute(clinic.lat, clinic.lng)}

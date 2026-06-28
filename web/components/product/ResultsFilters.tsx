@@ -29,7 +29,8 @@ export function ResultsFilters({
     router.replace(`${pathname}?${next.toString()}`);
   }
 
-  const has = ["city", "category", "min", "max", "sort"].some((k) => sp.get(k));
+  const has = ["city", "category", "min", "max", "sort", "open"].some((k) => sp.get(k));
+  const openNow = sp.get("open") === "1";
 
   return (
     <aside className="space-y-4">
@@ -49,6 +50,16 @@ export function ResultsFilters({
       </div>
 
       <div className="space-y-3">
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={openNow}
+            onChange={(e) => set("open", e.target.checked ? "1" : "")}
+            className="h-3.5 w-3.5 accent-[var(--accent,#0070F3)]"
+          />
+          Работает сейчас
+        </label>
+
         <div>
           <label className="mb-1 block text-xs text-muted">Город</label>
           <Select value={sp.get("city") || currentCity || "all"} onChange={(e) => set("city", e.target.value)}>

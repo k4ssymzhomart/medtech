@@ -8,6 +8,7 @@ import { Sparkline } from "@/components/ui/Sparkline";
 import { ClinicMiniMap } from "@/components/product/ClinicMiniMap";
 import { getClinic } from "@/lib/queries/clinic";
 import { twogisRoute } from "@/lib/utils/maps";
+import { isOpenNow, todayHours } from "@/lib/utils/hours";
 import { formatPrice, formatFreshness, freshnessState, pluralizeRu } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,8 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
       : formatPrice(prices[0])
     : null;
   const hasGeo = clinic.lat != null && clinic.lng != null;
+  const open = isOpenNow(clinic.working_hours);
+  const hours = todayHours(clinic.working_hours);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -71,6 +74,15 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
               <MapPin size={14} />
               {[clinic.city, clinic.address].filter(Boolean).join(", ") || "город не указан"}
             </div>
+            {(hours || clinic.working_hours) && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock size={14} />
+                  {hours ? `сегодня ${hours}` : "сегодня закрыто"}
+                </span>
+                <Badge variant={open ? "fresh" : "stale"}>{open ? "работает сейчас" : "закрыто"}</Badge>
+              </div>
+            )}
             {clinic.phone && (
               <div className="inline-flex items-center gap-1.5">
                 <Phone size={14} />

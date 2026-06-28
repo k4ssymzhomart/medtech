@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@/lib/supabase/server";
 import { CURRENT_OFFER_MAX_AGE_DAYS } from "@/lib/utils/format";
+import { isOpenNow, type Schedule } from "@/lib/utils/hours";
 
 // One clinic's price for the searched service.
 export type ServiceOffer = {
@@ -17,6 +18,8 @@ export type ServiceOffer = {
     city: string | null;
     address: string | null;
     rating: number | null;
+    phone: string | null;
+    working_hours: Schedule | null;
     lat?: number | null;
     lng?: number | null;
   } | null;
@@ -101,6 +104,7 @@ export type OffersOpts = {
   minPrice?: number;
   maxPrice?: number;
   sort?: SortKey;
+  openNow?: boolean;
 };
 
 export async function getOffersForQuery(q: string, opts: OffersOpts = {}): Promise<OffersResult> {
@@ -117,10 +121,10 @@ export async function getOffersForQuery(q: string, opts: OffersOpts = {}): Promi
     // Select clinic geo columns optimistically; retry without them if not migrated yet.
     const withGeo =
       "id, price, currency, duration_days, last_seen_at, source_url, raw_service_name, " +
-      "clinic:clinics(id, name, city, address, rating, lat, lng)";
+      "clinic:clinics(id, name, city, address, rating, phone, working_hours, lat, lng)";
     const noGeo =
       "id, price, currency, duration_days, last_seen_at, source_url, raw_service_name, " +
-      "clinic:clinics(id, name, city, address, rating)";
+      "clinic:clinics(id, name, city, address, rating, phone, working_hours)";
 
     const run = (sel: string) =>
       sb
@@ -158,6 +162,7 @@ export async function getOffersForQuery(q: string, opts: OffersOpts = {}): Promi
     if (appliedCity) offers = offers.filter((o) => o.clinic?.city === appliedCity);
     if (opts.minPrice != null) offers = offers.filter((o) => o.price >= opts.minPrice!);
     if (opts.maxPrice != null) offers = offers.filter((o) => o.price <= opts.maxPrice!);
+    if (opts.openNow) offers = offers.filter((o) => isOpenNow(o.clinic?.working_hours));
 
     const minPrice = offers.length ? Math.min(...offers.map((o) => o.price)) : null;
 
