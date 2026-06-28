@@ -33,7 +33,8 @@ class Settings:
                 "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set "
                 "(see worker/.env)."
             )
-        interval = float(os.environ.get("WORKER_POLL_INTERVAL", "10"))
+        # Default 60s: gentle prod cadence. Override with WORKER_POLL_INTERVAL.
+        interval = float(os.environ.get("WORKER_POLL_INTERVAL", "60"))
         fx = float(os.environ.get("FX_USD_KZT", "470"))
         return Settings(
             supabase_url=url,

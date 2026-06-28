@@ -1,0 +1,65 @@
+# render.yaml — Render Blueprint for MedServicePrice.kz
+#
+# Reproducible deploy of the public site. SECRETS ARE NEVER STORED HERE: every
+# secret is marked `sync: false`, which makes Render prompt for the value in the
+# dashboard (service → Environment) instead of reading it from the repo. The
+# Supabase DB is already populated, so no migration/seed step is needed to go live.
+#
+# DEPLOYS BY DEFAULT: one WEB service (the Next.js app in web/).
+# The Python worker is described below but COMMENTED OUT on purpose — for the live
+# demo the worker runs LOCALLY (`python -m app.main`), keeping the cloud minimal.
+# To run it in the cloud later, uncomment its block and set its env in the dashboard.
+# (Render background workers are a PAID tier — not available on free.)
+#
+# Full step-by-step + the exact env to paste: see README.md → "Деплой на Render".
+
+services:
+  # ── WEB (required) — Next.js public site + admin ────────────────────────────
+  - type: web
+    name: medserviceprice-web
+    runtime: node
+    region: frankfurt          # closest Render region to Kazakhstan. If your
+                               # Supabase project lives elsewhere, set the same
+                               # region here to cut server-side query latency.
+    plan: free                 # NOTE: free web services SPIN DOWN when idle
+                               # (~50s cold start on first hit). For a smooth live
+                               # demo, upgrade to `starter`, or open the URL ~1 min
+                               # before presenting to warm it up.
+    rootDir: web               # no root package.json — the Next.js app is web/
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start # `next start`; binds Render's $PORT automatically
+    envVars:
+      - key: NODE_VERSION
+        value: "20"            # Next 16 requires Node >= 20.9
+      - key: SUPABASE_URL
+        sync: false            # https://<ref>.supabase.co   (enter in dashboard)
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false            # service_role secret — server-only, never exposed
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false            # same project URL
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false            # anon / publishable key
+      - key: FX_USD_KZT
+        value: "470"           # USD->KZT rate used by the admin resolve action
+
+  # ── WORKER (OPTIONAL — NOT needed for the demo) ─────────────────────────────
+  # Polls the parse_runs queue for manual "Run now" jobs. For the demo this runs
+  # LOCALLY instead (README → "Воркер для демо"). Uncomment to deploy in the cloud.
+  # Render background workers require a PAID plan (Starter+), not free.
+  #
+  # - type: worker
+  #   name: medserviceprice-worker
+  #   runtime: docker
+  #   region: frankfurt
+  #   plan: starter            # workers are NOT available on the free tier
+  #   dockerfilePath: ./worker/Dockerfile
+  #   dockerContext: ./worker
+  #   envVars:
+  #     - key: SUPABASE_URL
+  #       sync: false
+  #     - key: SUPABASE_SERVICE_ROLE_KEY
+  #       sync: false
+  #     - key: WORKER_POLL_INTERVAL
+  #       value: "60"          # gentle prod cadence (code default is now 60 too)
+  #     - key: FX_USD_KZT
+  #       value: "470"
